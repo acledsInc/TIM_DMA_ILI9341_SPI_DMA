@@ -14,7 +14,7 @@ For example TIM1-BKIN (PC2) can be use external SPWM outputs ON - OFF switch.
 ![SPWM-CH1N-PD0-Wave](https://github.com/user-attachments/assets/b19eab46-e741-4c95-a5ad-089550b6a88d)
 
 12Vdc to 220Vac Single phase inverter schematic diagram. 
-MPU SPWM output do not connecte as direct to MOSFET, 3.3V PWM pulses must use IR2110 MOSFET driver. 
+MPU SPWM outputs do not connect as direct to MOSFET, 3.3V PWM pulses must use IR2110 MOSFET driver. 
 ![12Vdc-to-220Vac-Inverter-Sch](https://github.com/user-attachments/assets/80db2007-cec6-440c-9fa3-4fa4feb9e03e)
 
 If your 2.8 inch ILI9341 back-light brightness less than 1.4 inch small LCD when use 3.3V VDD. 
