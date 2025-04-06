@@ -12,9 +12,9 @@ TIM1 can be continuous generating 4 PWM pulses at TIM1-CH1 (PD2), TIM1-CH1N (PD0
 ![SPWM-CH1-PD2-Wave](https://github.com/user-attachments/assets/0d7e0965-c4c8-4f8c-aff1-ae9d0269faf8)
 ![SPWM-CH1N-PD0-Wave](https://github.com/user-attachments/assets/b19eab46-e741-4c95-a5ad-089550b6a88d)
 
-Some times, 2.8 inch ILI9341 back-light brightness less than 1.4 inch small LCD, 
-I was exchange R5 at connected BL drive transistor collector of Q1 at bottom side LCD module, 
-if R5 exchange resistor 8R2 to 1R0 or 2R2 then LCD brightness can be more high brightness by back light LED current increase. 
+If your 2.8 inch ILI9341 back-light brightness less than 1.4 inch small LCD when use 3.3V VDD. 
+You can be exchange R5 at connected BL drive transistor collector (Q1) at bottom side LCD module.
+Resistor R5 exchange 8R2 to 1R0 or 2R2 then LCD brightness increase more high brightness. 
 ![ILI9324-240x320-v1 2-bottom](https://github.com/user-attachments/assets/ebcde002-1628-449e-a546-9111e52792f3)
 
 I was modify ST7735 library to ILI9341 library. 
