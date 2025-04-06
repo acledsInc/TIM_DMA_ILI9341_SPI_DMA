@@ -18,7 +18,7 @@ MPU SPWM outputs do not connect as direct to MOSFET, 3.3V PWM pulses must use IR
 ![12Vdc-to-220Vac-Inverter-Sch](https://github.com/user-attachments/assets/80db2007-cec6-440c-9fa3-4fa4feb9e03e)
 
 If your 2.8 inch ILI9341 back-light brightness less than 1.4 inch small LCD when use 3.3V VDD. 
-You can be exchange R5 at connected BL drive transistor collector (Q1) at bottom side LCD module.
+You can be exchange R5 at connected BL drive transistor collector (Q1).
 Resistor R5 exchange 8R2 to 1R0 or 2R2 then LCD brightness increase more high brightness. 
 ![ILI9324-240x320-v1 2-bottom](https://github.com/user-attachments/assets/ebcde002-1628-449e-a546-9111e52792f3)
 
