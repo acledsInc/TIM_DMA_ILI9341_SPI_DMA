@@ -374,7 +374,7 @@ uint16_t rand16(void)
                     (lfsr >> NOISE_POLY_TAP3));
         lfsr     = (lfsr << 1) | (new_data & 1);
     }
-    return (lfsr & NOISE_MASK) *3;
+    return (lfsr & NOISE_MASK) *5;
 }
 
 //---------------------------------------------------------------------
@@ -436,7 +436,7 @@ void random_line(void)
     tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
     Delay_Ms(1000);
 
-    frame = 30;
+    frame = 20;
     while (frame-- >0)
     {
         tft_draw_line(rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, colors[rand16() %19]);
@@ -451,10 +451,10 @@ void center_rect(void)
     tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
     Delay_Ms(1000);
 
-    frame = 30;
+    frame = 10;
     while (frame-- >0)
     {
-        for (uint8_t i = 0; i < 100; i++)
+        for (uint8_t i = 0; i < 80; i++)
         {
             tft_draw_rect(i, i, ILI9341_WIDTH -(i << 1), ILI9341_HEIGHT -(i << 1), colors[rand16() %19]);
         }
