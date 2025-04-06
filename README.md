@@ -17,7 +17,7 @@ For example TIM1-BKIN (PC2) can be use external SPWM outputs ON - OFF switch.
 MPU SPWM outputs do not connect as direct to MOSFET, 3.3V PWM pulses must use IR2110 MOSFET driver. 
 ![12Vdc-to-220Vac-Inverter-Sch](https://github.com/user-attachments/assets/80db2007-cec6-440c-9fa3-4fa4feb9e03e)
 
-I bought 2.8 inch ILI9341 TFT LCD, And it just test for ST7735 library, I found ST7735 library compatible to ILI9341 by chance. ST7735 libray little bit different only display rotation.
+I bought 2.8 inch ILI9341 TFT LCD, And it just test for ST7735 library, I found ST7735 library compatible to ILI9341 by chance. ST7735 library little bit different only rotated display and reversed x and y.
 
 I was modify ST7735 library to ILI9341 library. 
 ILI9341 library only different "Memory Data Access Control" code for Set rotation in ILI9341.c 
