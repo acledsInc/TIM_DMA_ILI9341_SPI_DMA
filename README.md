@@ -44,7 +44,7 @@ This timer used TIM2->CNT get timer2 counter value by "on the fly" and diaplay i
 while 5 sec as end of timer2 (0 - 9999ms), after 5 sec Start 8 kind of graphic display to the LCD screen.
 ![ILI9341-Main-Menu](https://github.com/user-attachments/assets/57f16df9-18ba-4853-97f9-1816412f1cc8)
 
-LCD graphic demo of the main function is intented to examine efect of TIM1 SPWM generation.
+High speed LCD graphic demo with SPI-DMA transfer of the main function is intented to examine efect of TIM1 SPWM generation.
 
 Below screen shots are graphic demo on the TFT LCD ILI9341.
 ![ILI9341-Random-Dot](https://github.com/user-attachments/assets/00d75460-e9b7-4c21-861d-69b98c488a89)
