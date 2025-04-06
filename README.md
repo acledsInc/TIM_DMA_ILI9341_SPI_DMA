@@ -8,6 +8,7 @@ Full bridge PWM driver can be make high voltage 60Hz sine wave output for the DC
 TIM1 can be continuous generating 4 PWM pulses at TIM1-CH1 (PD2), TIM1-CH1N (PD0), TIM1-CH2 (PA1) and TIM1-CH2N (PA2) with TIM1-BRKIN (PC2) for the OCP or any other protection. 
 ![CH32V003-TIM1-SPWM-Output](https://github.com/user-attachments/assets/35a19328-bc73-448f-ac94-3d13ce385cb1)
 ![SPWM-CH1-PD2-Wave](https://github.com/user-attachments/assets/0d7e0965-c4c8-4f8c-aff1-ae9d0269faf8)
+![SPWM-CH1N-PD0-Wave](https://github.com/user-attachments/assets/b19eab46-e741-4c95-a5ad-089550b6a88d)
 
 SPI-DMA can be demo graphic data DMA transfer to SPI for the display on 320x240 ILI9341 TFT LCD.
 I bought 2.4 inch ILI9341 and just conneted 160x128 ST7735 LCD firmware driver. 
@@ -20,20 +21,21 @@ write_data_8(ILI9341_MADCTL_MX | ILI9341_MADCTL_MY | ILI9341_MADCTL_MV | ILI9341
 
 Some times, 2.4 inch ILI9341 back-light brightness less than 1.4 inch small LCD, I was exchange R5 at connected BL drive transistor collector of Q1 at bottom side LCD module, if R5 exchange resistor 8R2 to 1R0 or 2R2 then LCD brightness can be more high brightness by back light LED current to increase. 
 ![ILI9341-Random-Dot](https://github.com/user-attachments/assets/00d75460-e9b7-4c21-861d-69b98c488a89)
-![ILI9341-Main-Menu](https://github.com/user-attachments/assets/b62efff6-a8db-4152-bb04-ef02bb53a262)
+![ILI9341-Horz-Line](https://github.com/user-attachments/assets/9a079515-36e7-40d4-a967-6a213c061965)
+![ILI9341-Center-Rectangle](https://github.com/user-attachments/assets/b6c539e6-3ddf-4987-bb83-c77a7a87fb9f)
+![ILI9341-random-rect](https://github.com/user-attachments/assets/74fdc83e-6894-4c84-b61c-45b6a1233168)
+![ILI9341-Filled-Rect](https://github.com/user-attachments/assets/05d18a86-e4fa-42c1-9621-e04cd534b36a)
+![ILI9341-Move-Rect](https://github.com/user-attachments/assets/ab8b0118-b526-4c80-ae6c-89f3fc88f7f8)
 
 Averaged 10 bits ADC1-CH7 (PD4) data used only display on the LCD screen for the monitoring analog voltage and SPWM duty (sine wave amplitude) feedback control. (not implimented yet).
 
 TIM2 can be use msec timer for user delay timer as TIM2 interrupt service.
 This timer used TIM2->CNT get timer2 counter value by "on the fly" and diaplay in main menu while 5 sec as end of timer2 (0 - 9999ms)
 After 30sec, Start 8 kind of graphic display to the LCD screen.
-
 ![ILI9341-Main-Menu](https://github.com/user-attachments/assets/4b1da89a-0075-4441-9209-7c19105dc871)
-![ILI9341-Horz-Line](https://github.com/user-attachments/assets/9a079515-36e7-40d4-a967-6a213c061965)
-![ILI9341-Center-Rectangle](https://github.com/user-attachments/assets/b6c539e6-3ddf-4987-bb83-c77a7a87fb9f)
-![ILI9341-Filled-Rect](https://github.com/user-attachments/assets/05d18a86-e4fa-42c1-9621-e04cd534b36a)
-![ILI9341-Filled-Rect](https://github.com/user-attachments/assets/fb94143b-457b-48fa-bc52-98a47f6d2ddd)
-![ILI9341-Move-Rect](https://github.com/user-attachments/assets/ab8b0118-b526-4c80-ae6c-89f3fc88f7f8)
+
+Recommanded schematic diagram of WCH-CH32V003F4P6 ILI9341 demo.
+![ch32v003f4u6-tssop20-dev-kit-sch](https://github.com/user-attachments/assets/30cffacf-fc64-4348-92b4-b646d2f82b91)
 
 All source code made from reference of sample code at CH32V003 EVT for TSSOP-20pin WCH-CH32V003F4P6.
 This MPU has advance TIM1, TIM2, ADC, SPI, I2S and DMA functions compatible ARM STM32F030 series as standard HAL library code style for MounRiver Studio V2.1.0 (used dark theme same as vsCode)
