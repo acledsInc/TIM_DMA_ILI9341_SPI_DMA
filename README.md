@@ -17,10 +17,7 @@ For example TIM1-BKIN (PC2) can be use external SPWM outputs ON - OFF switch.
 MPU SPWM outputs do not connect as direct to MOSFET, 3.3V PWM pulses must use IR2110 MOSFET driver. 
 ![12Vdc-to-220Vac-Inverter-Sch](https://github.com/user-attachments/assets/80db2007-cec6-440c-9fa3-4fa4feb9e03e)
 
-If your 2.8 inch ILI9341 back-light brightness less than 1.4 inch small LCD when use 3.3V VDD. 
-You can be exchange R5 at connected BL drive transistor collector (Q1).
-Resistor R5 exchange 8R2 to 1R0 or 2R2 then LCD brightness increase more high brightness. 
-![ILI9324-240x320-v1 2-bottom](https://github.com/user-attachments/assets/ebcde002-1628-449e-a546-9111e52792f3)
+I bought 2.8 inch ILI9341 TFT LCD, And it just test for ST7735 library, I found ST7735 library compatible to ILI9341 by chance. ST7735 libray little bit different only display rotation.
 
 I was modify ST7735 library to ILI9341 library. 
 ILI9341 library only different "Memory Data Access Control" code for Set rotation in ILI9341.c 
@@ -29,6 +26,11 @@ Modify required only exchange the screen rotation code as below in ST7735.c libr
 
 write_command_8(ILI9341_MADCTL); // 0x36 =Memory Data Access Control.
 write_data_8(ILI9341_MADCTL_MX | ILI9341_MADCTL_MY | ILI9341_MADCTL_MV | ILI9341_MADCTL_BGR );
+
+If your 2.8 inch ILI9341 back-light brightness less than 1.4 inch small LCD when use 3.3V VDD. 
+You can be exchange R5 at connected BL drive transistor collector (Q1).
+Resistor R5 exchange 8R2 to 1R0 or 2R2 then LCD brightness increase more high brightness. 
+![ILI9324-240x320-v1 2-bottom](https://github.com/user-attachments/assets/ebcde002-1628-449e-a546-9111e52792f3)
 
 Graphic test for 2.8 inch 320x240 TFT LCD ILI9341
 ![ILI9341-Random-Dot](https://github.com/user-attachments/assets/00d75460-e9b7-4c21-861d-69b98c488a89)
