@@ -41,11 +41,12 @@ and SPWM duty (sine wave amplitude) feedback control. (not implimented yet).
 
 TIM2 can be use msec timer for user delay timer as TIM2 interrupt service.
 This timer used TIM2->CNT get timer2 counter value by "on the fly" and diaplay in main menu 
-while 5 sec as end of timer2 (0 - 9999ms)
-After 5 sec, Start 8 kind of graphic display to the LCD screen.
+while 5 sec as end of timer2 (0 - 9999ms), after 5 sec Start 8 kind of graphic display to the LCD screen.
 ![ILI9341-Main-Menu](https://github.com/user-attachments/assets/57f16df9-18ba-4853-97f9-1816412f1cc8)
 
-Graphic demo for 2.8 inch 320x240 TFT LCD ILI9341
+LCD graphic demo of the main function is intented to examine efect of TIM1 SPWM generation.
+
+Below screen shots are graphic demo on the TFT LCD ILI9341.
 ![ILI9341-Random-Dot](https://github.com/user-attachments/assets/00d75460-e9b7-4c21-861d-69b98c488a89)
 ![ILI9341-Horz-Line](https://github.com/user-attachments/assets/9a079515-36e7-40d4-a967-6a213c061965)
 ![ILI9341-Center-Rectangle](https://github.com/user-attachments/assets/b6c539e6-3ddf-4987-bb83-c77a7a87fb9f)
