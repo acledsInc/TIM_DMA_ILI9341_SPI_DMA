@@ -8,6 +8,7 @@ Timer 1 generate 4 PWM pulses for the single phase full brdige driver.
 Full bridge PWM driver can be make high voltage 60Hz sine wave output for the DC-AC inverter.
 
 TIM1 can be continuous generating 4 PWM pulses at TIM1-CH1 (PD2), TIM1-CH1N (PD0), TIM1-CH2 (PA1) and TIM1-CH2N (PA2) with TIM1-BRKIN (PC2) for the OCP or any other protection. 
+For example TIM1-BRRKIN (PC2) can be use external SPWM outputs ON - OFF switch.
 ![CH32V003-TIM1-SPWM-Output](https://github.com/user-attachments/assets/35a19328-bc73-448f-ac94-3d13ce385cb1)
 ![SPWM-CH1-PD2-Wave](https://github.com/user-attachments/assets/0d7e0965-c4c8-4f8c-aff1-ae9d0269faf8)
 ![SPWM-CH1N-PD0-Wave](https://github.com/user-attachments/assets/b19eab46-e741-4c95-a5ad-089550b6a88d)
