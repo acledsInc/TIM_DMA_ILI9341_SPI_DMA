@@ -15,7 +15,7 @@ TIM1 can be continuous generating 4 PWM pulses at TIM1-CH1 (PD2), TIM1-CH1N (PD0
 Some times, 2.8 inch ILI9341 back-light brightness less than 1.4 inch small LCD, 
 I was exchange R5 at connected BL drive transistor collector of Q1 at bottom side LCD module, 
 if R5 exchange resistor 8R2 to 1R0 or 2R2 then LCD brightness can be more high brightness by back light LED current increase. 
-![ILI9324-240x320-v1 2-bottom](https://github.com/user-attachments/assets/289ebdbe-32cd-43a2-a098-6718b7f4e3e5)
+![ILI9324-240x320-v1 2-bottom](https://github.com/user-attachments/assets/ebcde002-1628-449e-a546-9111e52792f3)
 
 I was modify ST7735 library to ILI9341 library. 
 ILI9341 library only different "Memory Data Access Control" code for Set rotation in ILI9341.c 
