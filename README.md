@@ -40,7 +40,7 @@ TIM2 can be use msec timer for user delay timer as TIM2 interrupt service.
 This timer used TIM2->CNT get timer2 counter value by "on the fly" and diaplay in main menu 
 while 5 sec as end of timer2 (0 - 9999ms)
 After 30sec, Start 8 kind of graphic display to the LCD screen.
-![ILI9341-Main-Menu](https://github.com/user-attachments/assets/4b1da89a-0075-4441-9209-7c19105dc871)
+![ILI9341-Main-Menu](https://github.com/user-attachments/assets/57f16df9-18ba-4853-97f9-1816412f1cc8)
 
 Recommanded schematic diagram of WCH-CH32V003F4P6 ILI9341 demo.
 ![ch32v003f4u6-tssop20-dev-kit-sch](https://github.com/user-attachments/assets/30cffacf-fc64-4348-92b4-b646d2f82b91)
