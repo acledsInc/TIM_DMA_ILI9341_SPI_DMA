@@ -13,12 +13,12 @@ For example TIM1-BKIN (PC2) can be use external SPWM outputs ON - OFF switch.
 ![SPWM-CH1-PD2-Wave](https://github.com/user-attachments/assets/0d7e0965-c4c8-4f8c-aff1-ae9d0269faf8)
 ![SPWM-CH1N-PD0-Wave](https://github.com/user-attachments/assets/b19eab46-e741-4c95-a5ad-089550b6a88d)
 
+We have 2 way of make 220Vac 60Hz SPWM inverter, One is 12Vdc to 220Vac used 60Hz low frequency transformer.
+Another way is 400Vdc to 220Vac 60Hz with AC output LC filter without low frequency transformer.
+This way require 12Vdc to isolated 400Vdc SMPS for automotive or 220Vac to 400Vdc isolated SMPS for home.  
+
 12Vdc to 220Vac Single phase inverter schematic diagram. 
 MPU SPWM outputs do not connect as direct to MOSFET, 3.3V PWM pulses must use IR2110 MOSFET driver. 
-
-We have 2 way of make 220V 60Hz SPWM inverter, One is 12Vdc voltage to 220Vac by 60Hz low frequency transformer.
-Another way is 400Vdc volatage to 220Vac 60Hz with LC filter at output without low frequency transformer.
-This way require 12Vdc to isolated 400Vdc SMPS for automotive or 220Vac to 400Vdc isolated SMPS for home.  
 ![12Vdc-to-220Vac-Inverter-Sch](https://github.com/user-attachments/assets/80db2007-cec6-440c-9fa3-4fa4feb9e03e)
 
 I bought 2.8 inch ILI9341 TFT LCD, And it just test for ST7735 library, I found ST7735 library compatible to ILI9341 by chance. ST7735 library little bit different only rotated display and reversed x and y.
