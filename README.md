@@ -52,6 +52,9 @@ After 5 sec, Start 8 kind of graphic display to the LCD screen.
 Recommanded schematic diagram of WCH-CH32V003F4P6 ILI9341 demo.
 ![ch32v003f4u6-tssop20-dev-kit-sch](https://github.com/user-attachments/assets/30cffacf-fc64-4348-92b4-b646d2f82b91)
 
+USB-C power with 3.3V LDO and USB-to-Serial converter for upgrade schematic diagram.
+![ch32v003f4p6-usbc-sch](https://github.com/user-attachments/assets/d4c162af-fc2d-487a-8d62-5a66ccd0f641)
+
 All source code made from reference of sample code at CH32V003 EVT for TSSOP-20pin WCH-CH32V003F4P6.
 This MPU has advance TIM1, TIM2, ADC, SPI, I2S and DMA functions compatible as ARM STM32F0XX series hardware,
 with standard HAL library code style for MounRiver Studio V2.1.0 (used dark theme same as vsCode)
