@@ -36,14 +36,6 @@ You can be exchange R5 at connected BL drive transistor collector (Q1).
 Resistor R5 exchange 8R2 to 1R0 or 2R2 then LCD brightness increase more high brightness. 
 ![ILI9324-240x320-v1 2-bottom](https://github.com/user-attachments/assets/ebcde002-1628-449e-a546-9111e52792f3)
 
-Graphic test for 2.8 inch 320x240 TFT LCD ILI9341
-![ILI9341-Random-Dot](https://github.com/user-attachments/assets/00d75460-e9b7-4c21-861d-69b98c488a89)
-![ILI9341-Horz-Line](https://github.com/user-attachments/assets/9a079515-36e7-40d4-a967-6a213c061965)
-![ILI9341-Center-Rectangle](https://github.com/user-attachments/assets/b6c539e6-3ddf-4987-bb83-c77a7a87fb9f)
-![ILI9341-random-rect](https://github.com/user-attachments/assets/74fdc83e-6894-4c84-b61c-45b6a1233168)
-![ILI9341-Filled-Rect](https://github.com/user-attachments/assets/05d18a86-e4fa-42c1-9621-e04cd534b36a)
-![ILI9341-Move-Rect](https://github.com/user-attachments/assets/ab8b0118-b526-4c80-ae6c-89f3fc88f7f8)
-
 Averaged 10 bits ADC1-CH7 (PD4) data used only display on the LCD screen for the monitoring analog voltage.
 and SPWM duty (sine wave amplitude) feedback control. (not implimented yet).
 
@@ -53,10 +45,18 @@ while 5 sec as end of timer2 (0 - 9999ms)
 After 5 sec, Start 8 kind of graphic display to the LCD screen.
 ![ILI9341-Main-Menu](https://github.com/user-attachments/assets/57f16df9-18ba-4853-97f9-1816412f1cc8)
 
+Graphic demo for 2.8 inch 320x240 TFT LCD ILI9341
+![ILI9341-Random-Dot](https://github.com/user-attachments/assets/00d75460-e9b7-4c21-861d-69b98c488a89)
+![ILI9341-Horz-Line](https://github.com/user-attachments/assets/9a079515-36e7-40d4-a967-6a213c061965)
+![ILI9341-Center-Rectangle](https://github.com/user-attachments/assets/b6c539e6-3ddf-4987-bb83-c77a7a87fb9f)
+![ILI9341-random-rect](https://github.com/user-attachments/assets/74fdc83e-6894-4c84-b61c-45b6a1233168)
+![ILI9341-Filled-Rect](https://github.com/user-attachments/assets/05d18a86-e4fa-42c1-9621-e04cd534b36a)
+![ILI9341-Move-Rect](https://github.com/user-attachments/assets/ab8b0118-b526-4c80-ae6c-89f3fc88f7f8)
+
 Recommanded schematic diagram of WCH-CH32V003F4P6 ILI9341 demo.
 ![ch32v003f4u6-tssop20-dev-kit-sch](https://github.com/user-attachments/assets/30cffacf-fc64-4348-92b4-b646d2f82b91)
 
-USB-C power with 3.3V LDO and USB-to-Serial converter for upgrade schematic diagram.
+USB-C power with 3.3V LDO and USB-to-Serial converter for upgrade board schematic diagram.
 ![ch32v003f4p6-usbc-sch](https://github.com/user-attachments/assets/d4c162af-fc2d-487a-8d62-5a66ccd0f641)
 
 All source code made from reference of sample code at CH32V003 EVT for TSSOP-20pin WCH-CH32V003F4P6.
