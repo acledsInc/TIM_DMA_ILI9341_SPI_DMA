@@ -44,7 +44,7 @@ and SPWM duty (sine wave amplitude) feedback control. (not implimented yet).
 TIM2 can be use msec timer for user delay timer as TIM2 interrupt service.
 This timer used TIM2->CNT get timer2 counter value by "on the fly" and diaplay in main menu 
 while 5 sec as end of timer2 (0 - 9999ms)
-After 30sec, Start 8 kind of graphic display to the LCD screen.
+After 5 sec, Start 8 kind of graphic display to the LCD screen.
 ![ILI9341-Main-Menu](https://github.com/user-attachments/assets/57f16df9-18ba-4853-97f9-1816412f1cc8)
 
 Recommanded schematic diagram of WCH-CH32V003F4P6 ILI9341 demo.
