@@ -98,6 +98,7 @@ u16 sine_fdb[buf_size] = {
 // PA1 =CH2 (180~360deg High Side)
 // PA2 =CH2N (180~360deg LOwh Side)
 // PC2 =BRKIN (High for OCP)
+
 // PC1 =LED for DMA Transfer Status
 //--------------------------------------------------------
 
@@ -330,7 +331,6 @@ void start_TIM2(uint16_t user_ms)
 {
     // user interval timer =TIM2 clock =1ms
     TIM2_INT_Init(user_ms, 48000);   // ARR =5,000ms
-    TIM2->CNT =0;
     TIM_Cmd(TIM2, ENABLE);        // start user code
 
     timer2_flag =1; // set timer2 flag
@@ -574,7 +574,7 @@ uint16_t rand16(void)
                     (lfsr >> NOISE_POLY_TAP3));
         lfsr     = (lfsr << 1) | (new_data & 1);
     }
-    return (lfsr & NOISE_MASK) *7 /2;
+    return (lfsr & NOISE_MASK) *5;
 }
 
 //---------------------------------------------------------------------
@@ -583,20 +583,16 @@ uint16_t rand16(void)
 void random_dot()
 {
     tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
-    Delay_Ms(1000);
 
     // user timer = TIM2-CNT (0~9999)
     start_TIM2(2000);
-
-    frame = 2000;
     while(timer2_flag)
     {
-        for (uint16_t i = 0; i < ILI9341_WIDTH; i +=3)
+        for (uint16_t i = 0; i < ILI9341_WIDTH; i++)
         {
             tft_draw_pixel(rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, colors[rand16() %19]);
         }
     }
-    TIM_Cmd(TIM2, DISABLE);  //  Start TIM1
 }
 
 //---------------------------------------------------------------------
@@ -605,20 +601,16 @@ void random_dot()
 void scan_hline()
 {
     tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
-    Delay_Ms(1000);
 
     // user timer = TIM2-CNT (0~9999)
     start_TIM2(2000);
-
-    frame = 1000;
     while(timer2_flag)
     {
-        for (uint16_t i = 0; i < ILI9341_WIDTH; i +=3)
+        for (uint16_t i = 0; i < ILI9341_WIDTH; i++)
         {
             tft_draw_line(0, i, ILI9341_WIDTH, i, colors[rand16() %19]);
         }
     }
-    TIM_Cmd(TIM2, DISABLE);  //  Start TIM1
 }
 
 //---------------------------------------------------------------------
@@ -627,20 +619,20 @@ void scan_hline()
 void scan_vline()
 {
     tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
-    Delay_Ms(1000);
 
     // user timer = TIM2-CNT (0~9999)
     start_TIM2(2000);
-
-    frame = 1000;
     while(timer2_flag)
     {
-        for (uint16_t i = 0; i < ILI9341_WIDTH; i +=3)
+        for (uint16_t i = 0; i < ILI9341_WIDTH; i++)
         {
             tft_draw_line(i, 0, i, ILI9341_HEIGHT, colors[rand16() %19]);
         }
+        for (uint16_t i = 0; i < ILI9341_WIDTH; i++)
+        {
+            tft_draw_line(i, 0, i, ILI9341_HEIGHT, colors[rand16() %19]);
+        }    
     }
-    TIM_Cmd(TIM2, DISABLE);  //  Start TIM1
 }
 
 //---------------------------------------------------------------------
@@ -649,17 +641,13 @@ void scan_vline()
 void random_line(void)
 {
     tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
-    Delay_Ms(1000);
 
     // user timer = TIM2-CNT (0~9999)
     start_TIM2(2000);
-
-    frame = 1000;
     while(timer2_flag)
     {
         tft_draw_line(rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, colors[rand16() %19]);
     }
-    TIM_Cmd(TIM2, DISABLE);  //  Start TIM1
 }
 
 //---------------------------------------------------------------------
@@ -668,12 +656,9 @@ void random_line(void)
 void center_rect(void)
 {
     tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
-    Delay_Ms(1000);
 
     // user timer = TIM2-CNT (0~9999)
     start_TIM2(2000);
-
-    frame = 1000;
     while(timer2_flag)
     {
         for (uint8_t i = 0; i < 120; i++)
@@ -681,7 +666,6 @@ void center_rect(void)
             tft_draw_rect(i, i, ILI9341_WIDTH -(i << 1), ILI9341_HEIGHT -(i << 1), colors[rand16() %19]);
         }
     }
-    TIM_Cmd(TIM2, DISABLE);  //  Start TIM1
 }
 
 //---------------------------------------------------------------------
@@ -690,12 +674,9 @@ void center_rect(void)
 void random_rect(void)
 {
     tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
-    Delay_Ms(1000);
 
     // user timer = TIM2-CNT (0~9999)
     start_TIM2(2000);
-
-    frame = 1000;
     while(timer2_flag)
     {
         for (uint8_t i = 0; i < 120; i++)
@@ -703,7 +684,6 @@ void random_rect(void)
             tft_draw_rect(rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, 20, 20, colors[rand16() % 19]);
         }
     }
-    TIM_Cmd(TIM2, DISABLE);  //  Start TIM1
 }
 
 //---------------------------------------------------------------------
@@ -712,12 +692,9 @@ void random_rect(void)
 void fill_rect(void)
 {
     tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
-    Delay_Ms(1000);
 
     // user timer = TIM2-CNT (0~9999)
     start_TIM2(2000);
-
-    frame = 1000;
     while(timer2_flag)
     {
         for (uint8_t i = 0; i < 120; i++)
@@ -725,7 +702,6 @@ void fill_rect(void)
             tft_fill_rect(rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, 20, 20, colors[rand16() %19]);
         }
     }
-    TIM_Cmd(TIM2, DISABLE);  //  Start TIM1
 }
 
 //---------------------------------------------------------------------
@@ -734,7 +710,6 @@ void fill_rect(void)
 void move_rect(void)
 {
     tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
-    Delay_Ms(1000);
 
     frame =1000;
     uint8_t x =0, y =0, step_x =2, step_y =2;
@@ -792,8 +767,8 @@ int main(void)
 #else
     USART_Printf_Init(115200);
 #endif
-    //printf("SystemClk:%d\r\n", SystemCoreClock);
-    //printf("ChipID:%08x\r\n", DBGMCU_GetCHIPID() );
+    printf("SystemClk:%d\r\n", SystemCoreClock);
+    printf("ChipID:%08x\r\n", DBGMCU_GetCHIPID() );
 
     // init SPWM waveform
     // (psc, arr*2 , ccp) for 15.0KHz PWM / 62 Step =120Hz
@@ -828,7 +803,6 @@ int main(void)
 
             Delay_Ms(25);   // Display time =25ms
         }
-        TIM_Cmd(TIM2, DISABLE);  //  Start TIM1
         
         demo_LCD();     // Display graphic demo
         // end user code
