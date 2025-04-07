@@ -265,6 +265,7 @@ void DMA1_Channel5_IRQHandler(void)
 void TIM2_INT_Init(u32 arr, u16 psc)
 {
     TIM_TimeBaseInitTypeDef TIMBase_InitStruct;
+    //TIM_OCInitTypeDef TIM_OCInitStructure = {0};
     NVIC_InitTypeDef NVIC_InitStruct;
 
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
@@ -275,6 +276,9 @@ void TIM2_INT_Init(u32 arr, u16 psc)
     TIMBase_InitStruct.TIM_Prescaler = psc -1;
     TIMBase_InitStruct.TIM_ClockDivision = TIM_CKD_DIV1;
     TIM_TimeBaseInit(TIM2, &TIMBase_InitStruct);
+
+    //TIM_OCInitStructure.TIM_Pulse = 0;
+    //TIM_OC1Init(TIM2, &TIM_OCInitStructure);
     TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
 
     NVIC_InitStruct.NVIC_IRQChannel = TIM2_IRQn;
@@ -314,229 +318,22 @@ void TIM2_IRQHandler(void)
 
        // this can be replaced with your code of flag set
        // so that in main's that flag can be handled
-       timer2_flag =1;  // end of timer2
+       timer2_flag =0;  // end of timer2
 
        // Clear TIM2 flag
        TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
    }
 }
 
-//---------------------------------------------------------------------
-// init SPWM waveform
-// SPWM table -> DMA1-CH5 -> TIM1-CCP -> SPWM output
-// DMA1_Channel5_IRQHandler -> Switch transfer to CCP1 or CCCP2
-//---------------------------------------------------------------------
-void init_SPWM(void)
+// user timer =5 sec
+void start_TIM2(uint16_t user_ms)
 {
-    // (psc, arr*2 , ccr) for 15.0KHz PWM / 120 Step =120Hz
-    TIM1_PWMOut_Init(TIM1_ARR, TIM1_PSC, 0);
+    // user interval timer =TIM2 clock =1ms
+    TIM2_INT_Init(user_ms, 48000);   // ARR =5,000ms
+    TIM2->CNT =0;
+    TIM_Cmd(TIM2, ENABLE);        // start user code
 
-    // Sine PWM to CH1, CH1N,
-    TIM1_DMA_Init(DMA1_Channel5, (u32)TIM1_CH1CVR_ADDRESS, (u32)sine_fdb, buf_size);
-    //TIM1_DMA_Init(DMA1_Channel5, (u32)TIM1_CH2CVR_ADDRESS, (u32)sine_fdb buf_size);
-
-    TIM_DMACmd(TIM1, TIM_DMA_Update, ENABLE);   // Start DMA
-    TIM_Cmd(TIM1, ENABLE);  //  Start TIM1
-}
-
-//---------------------------------------------------------------------
-// White Noise Generator State
-//---------------------------------------------------------------------
-#define NOISE_BITS      8
-#define NOISE_MASK      ((1 << NOISE_BITS) -1)
-#define NOISE_POLY_TAP0 31
-#define NOISE_POLY_TAP1 11
-#define NOISE_POLY_TAP2 1
-#define NOISE_POLY_TAP3 0
-
-uint32_t frame = 0;
-uint16_t colors[] =
-{
-    BLACK, NAVY, DARKGREEN, DARKCYAN, MAROON,
-    PURPLE, OLIVE, LIGHTGREY, DARKGREY, BLUE,
-    GREEN, CYAN, RED, MAGENTA, YELLOW, WHITE,
-    ORANGE, GREENYELLOW, PINK,
-};
-
-//---------------------------------------------------------------------
-// random byte generator
-//---------------------------------------------------------------------
-u32 lfsr = 1;
-
-uint16_t rand16(void)
-{
-    u16  bit;
-    u32 new_data;
-
-    for (bit = 0; bit < NOISE_BITS; bit++)
-    {
-        new_data = ((lfsr >> NOISE_POLY_TAP0) ^ (lfsr >> NOISE_POLY_TAP1) ^ (lfsr >> NOISE_POLY_TAP2) ^
-                    (lfsr >> NOISE_POLY_TAP3));
-        lfsr     = (lfsr << 1) | (new_data & 1);
-    }
-    return (lfsr & NOISE_MASK) *5;
-}
-
-//---------------------------------------------------------------------
-// draw random Dot
-//---------------------------------------------------------------------
-void random_dot()
-{
-    tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
-    Delay_Ms(1000);
-
-    frame = 20000;
-    while (frame-- >0)
-    {
-        tft_draw_pixel(rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, colors[rand16() %19]);
-    }
-}
-
-//---------------------------------------------------------------------
-// Scan H-Line
-//---------------------------------------------------------------------
-void scan_hline()
-{
-    tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
-    Delay_Ms(1000);
-
-    frame = 10;
-    while (frame-- >0)
-    {
-        for (uint16_t i = 0; i < ILI9341_HEIGHT; i +=2)
-        {
-            tft_draw_line(0, i, ILI9341_WIDTH, i, colors[rand16() %19]);
-        }
-    }
-}
-
-//---------------------------------------------------------------------
-// Scan V-Line
-//---------------------------------------------------------------------
-void scan_vline()
-{
-    tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
-    Delay_Ms(1000);
-
-    frame = 1;
-    while (frame-- >0)
-    {
-        for (uint16_t i = 0; i < ILI9341_WIDTH; i +=3)
-        {
-            tft_draw_line(i, 0, i, ILI9341_HEIGHT, colors[rand16() %19]);
-        }
-    }
-}
-
-//---------------------------------------------------------------------
-// Random Line
-//---------------------------------------------------------------------
-void random_line(void)
-{
-    tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
-    Delay_Ms(1000);
-
-    frame = 80;
-    while (frame-- >0)
-    {
-        tft_draw_line(rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, colors[rand16() %19]);
-    }
-}
-
-//---------------------------------------------------------------------
-// Centered Rectangle
-//---------------------------------------------------------------------
-void center_rect(void)
-{
-    tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
-    Delay_Ms(1000);
-
-    frame = 10;
-    while (frame-- >0)
-    {
-        for (uint8_t i = 0; i < 100; i++)
-        {
-            tft_draw_rect(i, i, ILI9341_WIDTH -(i << 1), ILI9341_HEIGHT -(i << 1), colors[rand16() %19]);
-        }
-    }
-}
-
-//---------------------------------------------------------------------
-// Random Rectangle
-//---------------------------------------------------------------------
-void random_rect(void)
-{
-    tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
-    Delay_Ms(1000);
-
-    frame = 2000;
-    while (frame-- >0)
-    {
-        tft_draw_rect(rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, 20, 20, colors[rand16() % 19]);
-    }
-}
-
-//---------------------------------------------------------------------
-// Fill Rectangle
-//---------------------------------------------------------------------
-void fill_rect(void)
-{
-    tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
-    Delay_Ms(1000);
-
-    frame = 1000;
-    while (frame-- >0)
-    {
-        tft_fill_rect(rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, 20, 20, colors[rand16() %19]);
-    }
-}
-
-//---------------------------------------------------------------------
-// Move Rectangle
-//---------------------------------------------------------------------
-void move_rect(void)
-{
-    tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
-    Delay_Ms(1000);
-
-    frame =1000;
-    uint8_t x =0, y =0, step_x =2, step_y =2;
-    while (frame-- >0)
-    {
-        uint16_t bg = colors[rand16() %19];
-        tft_fill_rect(x, y, 80, 16, bg);
-        tft_set_color(colors[rand16() %19]);
-
-        
-        x += step_x;
-        if (x >= ILI9341_WIDTH -80)
-        {
-            step_x = -step_x;
-        }
-        y += step_y;
-        if (y >= ILI9341_HEIGHT -20)
-        {
-            step_y = -step_y;
-        }
-    }
-}
-
-//---------------------------------------------------------------------
-// ST7735 demo display
-//---------------------------------------------------------------------
-void demo_LCD(void)
-{
-    random_dot();
-
-    scan_hline();
-    scan_vline();
-    random_line();
-
-    center_rect();
-    random_rect();
-
-    fill_rect();
-    move_rect();
+    timer2_flag =1; // set timer2 flag
 }
 
 //---------------------------------------------------------------------
@@ -743,6 +540,242 @@ void disp_MENU(void)
 }
 
 //---------------------------------------------------------------------
+// White Noise Generator State
+//---------------------------------------------------------------------
+#define NOISE_BITS      8
+#define NOISE_MASK      ((1 << NOISE_BITS) -1)
+#define NOISE_POLY_TAP0 31
+#define NOISE_POLY_TAP1 11
+#define NOISE_POLY_TAP2 1
+#define NOISE_POLY_TAP3 0
+
+uint32_t frame = 0;
+uint16_t colors[] =
+{
+    BLACK, NAVY, DARKGREEN, DARKCYAN, MAROON,
+    PURPLE, OLIVE, LIGHTGREY, DARKGREY, BLUE,
+    GREEN, CYAN, RED, MAGENTA, YELLOW, WHITE,
+    ORANGE, GREENYELLOW, PINK,
+};
+
+//---------------------------------------------------------------------
+// random byte generator
+//---------------------------------------------------------------------
+uint32_t lfsr = 1;
+
+uint16_t rand16(void)
+{
+    u16  bit;
+    u32 new_data;
+
+    for (bit = 0; bit < NOISE_BITS; bit++)
+    {
+        new_data = ((lfsr >> NOISE_POLY_TAP0) ^ (lfsr >> NOISE_POLY_TAP1) ^ (lfsr >> NOISE_POLY_TAP2) ^
+                    (lfsr >> NOISE_POLY_TAP3));
+        lfsr     = (lfsr << 1) | (new_data & 1);
+    }
+    return (lfsr & NOISE_MASK) *7 /2;
+}
+
+//---------------------------------------------------------------------
+// draw random Dot
+//---------------------------------------------------------------------
+void random_dot()
+{
+    tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
+    Delay_Ms(1000);
+
+    // user timer = TIM2-CNT (0~9999)
+    start_TIM2(2000);
+
+    frame = 2000;
+    while(timer2_flag)
+    {
+        for (uint16_t i = 0; i < ILI9341_WIDTH; i +=3)
+        {
+            tft_draw_pixel(rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, colors[rand16() %19]);
+        }
+    }
+    TIM_Cmd(TIM2, DISABLE);  //  Start TIM1
+}
+
+//---------------------------------------------------------------------
+// Scan H-Line
+//---------------------------------------------------------------------
+void scan_hline()
+{
+    tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
+    Delay_Ms(1000);
+
+    // user timer = TIM2-CNT (0~9999)
+    start_TIM2(2000);
+
+    frame = 1000;
+    while(timer2_flag)
+    {
+        for (uint16_t i = 0; i < ILI9341_WIDTH; i +=3)
+        {
+            tft_draw_line(0, i, ILI9341_WIDTH, i, colors[rand16() %19]);
+        }
+    }
+    TIM_Cmd(TIM2, DISABLE);  //  Start TIM1
+}
+
+//---------------------------------------------------------------------
+// Scan V-Line
+//---------------------------------------------------------------------
+void scan_vline()
+{
+    tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
+    Delay_Ms(1000);
+
+    // user timer = TIM2-CNT (0~9999)
+    start_TIM2(2000);
+
+    frame = 1000;
+    while(timer2_flag)
+    {
+        for (uint16_t i = 0; i < ILI9341_WIDTH; i +=3)
+        {
+            tft_draw_line(i, 0, i, ILI9341_HEIGHT, colors[rand16() %19]);
+        }
+    }
+    TIM_Cmd(TIM2, DISABLE);  //  Start TIM1
+}
+
+//---------------------------------------------------------------------
+// Random Line
+//---------------------------------------------------------------------
+void random_line(void)
+{
+    tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
+    Delay_Ms(1000);
+
+    // user timer = TIM2-CNT (0~9999)
+    start_TIM2(2000);
+
+    frame = 1000;
+    while(timer2_flag)
+    {
+        tft_draw_line(rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, colors[rand16() %19]);
+    }
+    TIM_Cmd(TIM2, DISABLE);  //  Start TIM1
+}
+
+//---------------------------------------------------------------------
+// Centered Rectangle
+//---------------------------------------------------------------------
+void center_rect(void)
+{
+    tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
+    Delay_Ms(1000);
+
+    // user timer = TIM2-CNT (0~9999)
+    start_TIM2(2000);
+
+    frame = 1000;
+    while(timer2_flag)
+    {
+        for (uint8_t i = 0; i < 120; i++)
+        {
+            tft_draw_rect(i, i, ILI9341_WIDTH -(i << 1), ILI9341_HEIGHT -(i << 1), colors[rand16() %19]);
+        }
+    }
+    TIM_Cmd(TIM2, DISABLE);  //  Start TIM1
+}
+
+//---------------------------------------------------------------------
+// Random Rectangle
+//---------------------------------------------------------------------
+void random_rect(void)
+{
+    tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
+    Delay_Ms(1000);
+
+    // user timer = TIM2-CNT (0~9999)
+    start_TIM2(2000);
+
+    frame = 1000;
+    while(timer2_flag)
+    {
+        for (uint8_t i = 0; i < 120; i++)
+        {
+            tft_draw_rect(rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, 20, 20, colors[rand16() % 19]);
+        }
+    }
+    TIM_Cmd(TIM2, DISABLE);  //  Start TIM1
+}
+
+//---------------------------------------------------------------------
+// Fill Rectangle
+//---------------------------------------------------------------------
+void fill_rect(void)
+{
+    tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
+    Delay_Ms(1000);
+
+    // user timer = TIM2-CNT (0~9999)
+    start_TIM2(2000);
+
+    frame = 1000;
+    while(timer2_flag)
+    {
+        for (uint8_t i = 0; i < 120; i++)
+        {
+            tft_fill_rect(rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, 20, 20, colors[rand16() %19]);
+        }
+    }
+    TIM_Cmd(TIM2, DISABLE);  //  Start TIM1
+}
+
+//---------------------------------------------------------------------
+// Move Rectangle
+//---------------------------------------------------------------------
+void move_rect(void)
+{
+    tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
+    Delay_Ms(1000);
+
+    frame =1000;
+    uint8_t x =0, y =0, step_x =2, step_y =2;
+    while (frame-- >0)
+    {
+        uint16_t bg = colors[rand16() %19];
+        tft_fill_rect(x, y, 80, 16, bg);
+        tft_set_color(colors[rand16() %19]);
+        
+        x += step_x;
+        if (x >= ILI9341_WIDTH -80)
+        {
+            step_x = -step_x;
+        }
+        y += step_y;
+        if (y >= ILI9341_HEIGHT -20)
+        {
+            step_y = -step_y;
+        }
+    }
+}
+
+//---------------------------------------------------------------------
+// ST7735 demo display
+//---------------------------------------------------------------------
+void demo_LCD(void)
+{
+    random_dot();
+
+    scan_hline();
+    scan_vline();
+    random_line();
+
+    center_rect();
+    random_rect();
+
+    fill_rect();
+    move_rect();
+}
+
+//---------------------------------------------------------------------
 // Main program.
 //---------------------------------------------------------------------
 int main(void)
@@ -762,46 +795,42 @@ int main(void)
     //printf("SystemClk:%d\r\n", SystemCoreClock);
     //printf("ChipID:%08x\r\n", DBGMCU_GetCHIPID() );
 
-    init_SPWM();
+    // init SPWM waveform
+    // (psc, arr*2 , ccp) for 15.0KHz PWM / 62 Step =120Hz
+    TIM1_PWMOut_Init(TIM1_ARR, TIM1_PSC, 0);
+
+    // Sine PWM to CH1, CH1N,
+    TIM1_DMA_Init(DMA1_Channel5, (u32)TIM1_CH1CVR_ADDRESS, (u32)sine_fdb, buf_size);
+    //TIM1_DMA_Init(DMA1_Channel5, (u32)TIM1_CH2CVR_ADDRESS, (u32)sine_fdb buf_size);
+
+    TIM_DMACmd(TIM1, TIM_DMA_Update, ENABLE);   // Start TIM1_DMA
+    TIM_Cmd(TIM1, ENABLE);  //  Start TIM1
+
+    init_ADC();
+    init_DMA();
 
     // Init ST7735 TFT LCD
     tft_init();
     Delay_Ms(100);
 
-    // clear screen
-    tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
-    // set text color
-    tft_set_color(WHITE);
-    // set text bg color
-    tft_set_background_color(BLACK);
-
-    //demo_LCD();
-    disp_MENU();
-
-    init_ADC();
-    init_DMA();
-
-    // user interval timer =TIM2 clock =1ms
-    TIM2_INT_Init(5000, 48000);   // ARR =5,000ms
-
     // End of Hardware Setup
     while(1)
     {
-        // start user code
-        TIM_Cmd(TIM2, ENABLE);
-        timer2_flag =0; // reset timer2 flag
+        //tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
+        disp_MENU();
 
         // Dispaly ADC-CH7 (0~1023) and TIM2-CNT (0~9999)
-        while(timer2_flag == 0)
+        start_TIM2(5000);   // user timer =5 sec
+        while(timer2_flag)
         {
             disp_ADC();     // Read ADC binary and decimal display [mV]
             disp_TIM2();    // Display timer2 [ms]
 
             Delay_Ms(25);   // Display time =25ms
         }
-
+        TIM_Cmd(TIM2, DISABLE);  //  Start TIM1
+        
         demo_LCD();     // Display graphic demo
-        disp_MENU();    // Clear screen and display main menu
         // end user code
     }
 }   // End of main()

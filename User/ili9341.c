@@ -192,9 +192,20 @@ static void write_data_16(uint16_t data)
     SPI_send(data);
 }
 
-/// \brief Initialize ST7735
+// ST7735 Gamma Adjustments (pos. polarity), 16 args.
+const uint8_t gamma_p[] = {0x09, 0x16, 0x09, 0x20, 0x21, 0x1B, 0x13, 0x19,
+                    0x17, 0x15, 0x1E, 0x2B, 0x04, 0x05, 0x02, 0x0E};
+//uint8_t gamma_p[] = {0x0F, 0x31, 0x2B, 0x0C, 0x0E, 0x08,
+//   0x4E, 0xF1, 0x37, 0x07, 0x10, 0x03, 0x0E, 0x09, 0x00};
+
+// ST7735  Gamma Adjustments (neg. polarity), 16 args.
+const uint8_t gamma_n[] = {0x0B, 0x14, 0x08, 0x1E, 0x22, 0x1D, 0x18, 0x1E,
+                    0x1B, 0x1A, 0x24, 0x2B, 0x06, 0x06, 0x02, 0x0F};
+//uint8_t gamma_n[] = {0x00, 0x0E, 0x14, 0x03, 0x11, 0x07, 
+//    0x31, 0xC1, 0x48, 0x08, 0x0F, 0x0C, 0x31, 0x36, 0x0F};
+    
+
 /// \details Initialization sequence from Arduino_GFX
-/// https://github.com/moononournation/Arduino_GFX/blob/master/src/display/Arduino_ST7735.h
 void tft_init(void)
 {
     SPI_init();
@@ -204,11 +215,28 @@ void tft_init(void)
     write_command_8(ILI9341_SLPOUT);
     Delay_Ms(ILI9341_SLPOUT_DELAY);
 
+    // Power control VRH[5:0]
+    write_command_8(0xC0);
+    write_data_8(0x23);             
+
+    // Power control SAP[2:0];BT[3:0]
+    write_command_8(0xC1);
+    write_data_8(0x10);           
+
+    // VCM control 1
+    write_command_8(0xC5);
+    write_data_8(0x3e);
+    write_data_8(0x28);       
+
+    // VCM control 2
+    write_command_8(0xC7);
+    write_data_8(0x86);             
+
     // 0x36 =Memory Data Access Control for Set rotation (ILI9341)
     write_command_8(ILI9341_MADCTL); 
     write_data_8(ILI9341_MADCTL_MX | ILI9341_MADCTL_MY |ILI9341_MADCTL_MV | ILI9341_MADCTL_BGR ); // 0 - Horizontal
 
-    // Set rotate for ST7735 =0~3
+    // Set rotate for ST7735 =0 ~ 3
     //write_data_8(ILI9341_MADCTL_MY | ILI9341_MADCTL_MV | ILI9341_MADCTL_BGR); // 0 - Horizontal
     //write_data_8(ILI9341_MADCTL_BGR); // 1 - Vertical
     //write_data_8(ILI9341_MADCTL_MX | ILI9341_MADCTL_MV | ILI9341_MADCTL_BGR); // 2 - Horizontal
@@ -218,22 +246,35 @@ void tft_init(void)
     write_command_8(ILI9341_COLMOD);
     write_data_8(ILI9341_COLMOD_16_BPP);
 
-    // Gamma Adjustments (pos. polarity), 16 args.
-    // (Not entirely necessary, but provides accurate colors)
-    uint8_t gamma_p[] = {0x09, 0x16, 0x09, 0x20, 0x21, 0x1B, 0x13, 0x19,
-                         0x17, 0x15, 0x1E, 0x2B, 0x04, 0x05, 0x02, 0x0E};
-    write_command_8(ILI9341_GMCTRP1);
+    // Vertical Scrolling Start Address
+    write_command_8(0x37);
+    write_data_8(0x00);             
+
+    //COLMOD: Pixel Format Set
+    write_command_8(0x3A);
+    write_data_8(0x55);
+
+    // Frame Rate Control 1
+    write_command_8(0xB1);
+    write_data_8(0x00);
+    write_data_8(0x18);
     
+    // Display Function Control
+    write_command_8(0xB6);
+    write_data_8(0x08);
+    write_data_8(0x82);
+    write_data_8(0x27);
+
+    // ILI9341_GAMMASET
+    write_command_8(0x26);
+    write_data_8(0x01);
+
+    write_command_8(ILI9341_GMCTRP1); 
     GPIO_SetBits(GPIOC, GPIO_Pin_3);    // DC = high =data
     SPI_send_DMA(gamma_p, 16, 1);   // DMA transfer only data
     Delay_Ms(10);
 
-    // Gamma Adjustments (neg. polarity), 16 args.
-    // (Not entirely necessary, but provides accurate colors)
-    uint8_t gamma_n[] = {0x0B, 0x14, 0x08, 0x1E, 0x22, 0x1D, 0x18, 0x1E,
-                         0x1B, 0x1A, 0x24, 0x2B, 0x06, 0x06, 0x02, 0x0F};
     write_command_8(ILI9341_GMCTRN1);
-    
     GPIO_SetBits(GPIOC, GPIO_Pin_3);    // DC = high =data
     SPI_send_DMA(gamma_n, 16, 1);   // DMA transfer only data 
     Delay_Ms(10);
