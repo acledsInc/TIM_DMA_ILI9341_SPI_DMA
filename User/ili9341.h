@@ -18,6 +18,16 @@
 #define ILI9341_SLPOUT_DELAY 120  // delay ms wait for sleep out finish
 
 // System Function Command List - Write Commands Only
+#define ILI9341_NOP     0x00
+#define ILI9341_SWRESET 0x01
+#define ILI9341_RDDID   0x04
+#define ILI9341_RDDST   0x09
+#define ILI9341_RDMODE  0x0A
+#define ILI9341_RDMADCTL  0x0B
+#define ILI9341_RDPIXFMT  0x0C
+#define ILI9341_RDIMGFMT  0x0D
+//#define ILI9341_RDSELFDIAG  0x0F
+
 #define ILI9341_SLPIN   0x10  // Sleep IN
 #define ILI9341_SLPOUT  0x11  // Sleep Out
 #define ILI9341_PTLON   0x12  // Partial Display Mode On
@@ -30,6 +40,8 @@
 #define ILI9341_CASET   0x2A  // Column Address Set
 #define ILI9341_RASET   0x2B  // Row Address Set
 #define ILI9341_RAMWR   0x2C  // Memory Write
+//#define ILI9341_RAMRD   0x2E
+
 #define ILI9341_PLTAR   0x30  // Partial Area
 #define ILI9341_TEOFF   0x34  // Tearing Effect Line Off
 #define ILI9341_TEON    0x35  // Tearing Effect Line On
@@ -37,6 +49,25 @@
 #define ILI9341_IDMOFF  0x38  // Idle Mode Off
 #define ILI9341_IDMON   0x39  // Idle Mode On
 #define ILI9341_COLMOD  0x3A  // Interface Pixel Format
+
+#define ILI9341_FRMCTR1 0xB1
+#define ILI9341_FRMCTR2 0xB2
+#define ILI9341_FRMCTR3 0xB3
+#define ILI9341_INVCTR  0xB4
+#define ILI9341_DFUNCTR 0xB6
+
+#define ILI9341_PWCTR1  0xC0
+#define ILI9341_PWCTR2  0xC1
+#define ILI9341_PWCTR3  0xC2
+#define ILI9341_PWCTR4  0xC3
+#define ILI9341_PWCTR5  0xC4
+#define ILI9341_VMCTR1  0xC5
+#define ILI9341_VMCTR2  0xC7
+
+//#define ILI9341_RDID1   0xDA
+//#define ILI9341_RDID2   0xDB
+//#define ILI9341_RDID3   0xDC
+//#define ILI9341_RDID4   0xDD
 
 // Panel Function Command List - Only Used
 #define ILI9341_GMCTRP1 0xE0  // Gamma '+' polarity Correction Characteristics Setting
