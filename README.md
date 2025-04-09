@@ -42,7 +42,7 @@ and SPWM duty (sine wave amplitude) feedback control. (not implimented yet).
 TIM2 can be use msec timer for user delay timer as TIM2 interrupt service.
 This timer used TIM2->CNT get timer2 counter value by "on the fly" and diaplay in main menu 
 while 5 sec as end of timer2 (0 - 9999ms), after 5 sec Start 8 kind of graphic display to the LCD screen.
-![ILI9341-Main-Menu](https://github.com/user-attachments/assets/57f16df9-18ba-4853-97f9-1816412f1cc8)
+![ili9341-main-menu](https://github.com/user-attachments/assets/8156a99d-def2-475e-bb35-8c65d039847e)
 
 High speed LCD graphic demo with SPI-DMA transfer of the main function is intented to examine efect of TIM1 SPWM generation.
 
@@ -52,7 +52,8 @@ Below screen shots are graphic demo on the TFT LCD ILI9341.
 ![ILI9341-Center-Rectangle](https://github.com/user-attachments/assets/b6c539e6-3ddf-4987-bb83-c77a7a87fb9f)
 ![ILI9341-random-rect](https://github.com/user-attachments/assets/74fdc83e-6894-4c84-b61c-45b6a1233168)
 ![ILI9341-Filled-Rect](https://github.com/user-attachments/assets/05d18a86-e4fa-42c1-9621-e04cd534b36a)
-![ILI9341-Move-Rect](https://github.com/user-attachments/assets/ab8b0118-b526-4c80-ae6c-89f3fc88f7f8)
+![ili9341-move-rectangle](https://github.com/user-attachments/assets/f020c294-46e1-4230-bd6f-a86a06a1c82a)
+![ili9341-random-circle](https://github.com/user-attachments/assets/0700df02-02ad-4975-8ec5-acdfffe6fe1b)
 
 Recommanded schematic diagram of WCH-CH32V003F4P6 ILI9341 demo.
 ![ch32v003f4u6-tssop20-dev-kit-sch](https://github.com/user-attachments/assets/30cffacf-fc64-4348-92b4-b646d2f82b91)
