@@ -49,9 +49,9 @@ High speed LCD graphic demo with SPI-DMA transfer of the main function is intent
 Below screen shots are graphic demo on the TFT LCD ILI9341.
 ![ILI9341-Random-Dot](https://github.com/user-attachments/assets/00d75460-e9b7-4c21-861d-69b98c488a89)
 ![ILI9341-Horz-Line](https://github.com/user-attachments/assets/9a079515-36e7-40d4-a967-6a213c061965)
-![ILI9341-Center-Rectangle](https://github.com/user-attachments/assets/b6c539e6-3ddf-4987-bb83-c77a7a87fb9f)
+![ili9341-center-rect](https://github.com/user-attachments/assets/c55c4a7f-18f6-4b86-b260-e10b2f6e503e)
 ![ILI9341-random-rect](https://github.com/user-attachments/assets/74fdc83e-6894-4c84-b61c-45b6a1233168)
-![ILI9341-Filled-Rect](https://github.com/user-attachments/assets/05d18a86-e4fa-42c1-9621-e04cd534b36a)
+![ili9341-fill-rect](https://github.com/user-attachments/assets/47aeb06b-14ef-4bad-b8c3-9e1644b9fe00)
 ![ili9341-move-rectangle](https://github.com/user-attachments/assets/f020c294-46e1-4230-bd6f-a86a06a1c82a)
 ![ili9341-random-circle](https://github.com/user-attachments/assets/0700df02-02ad-4975-8ec5-acdfffe6fe1b)
 
