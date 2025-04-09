@@ -16,6 +16,7 @@
 // Delays
 #define ILI9341_RST_DELAY    50   // delay ms wait for reset finish
 #define ILI9341_SLPOUT_DELAY 120  // delay ms wait for sleep out finish
+#define ILI9341_TRANSPARENT	0x80000000
 
 // System Function Command List - Write Commands Only
 #define ILI9341_NOP     0x00
@@ -40,7 +41,7 @@
 #define ILI9341_CASET   0x2A  // Column Address Set
 #define ILI9341_RASET   0x2B  // Row Address Set
 #define ILI9341_RAMWR   0x2C  // Memory Write
-//#define ILI9341_RAMRD   0x2E
+#define ILI9341_RAMRD   0x2E
 
 #define ILI9341_PLTAR   0x30  // Partial Area
 #define ILI9341_TEOFF   0x34  // Tearing Effect Line Off
@@ -64,10 +65,10 @@
 #define ILI9341_VMCTR1  0xC5
 #define ILI9341_VMCTR2  0xC7
 
-//#define ILI9341_RDID1   0xDA
-//#define ILI9341_RDID2   0xDB
-//#define ILI9341_RDID3   0xDC
-//#define ILI9341_RDID4   0xDD
+#define ILI9341_RDID1   0xDA
+#define ILI9341_RDID2   0xDB
+#define ILI9341_RDID3   0xDC
+#define ILI9341_RDID4   0xDD
 
 // Panel Function Command List - Only Used
 #define ILI9341_GMCTRP1 0xE0  // Gamma '+' polarity Correction Characteristics Setting
@@ -179,5 +180,7 @@ void tft_fill_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint
 /// \param height Height
 /// \param bitmap Bitmap
 void tft_draw_bitmap(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint8_t* bitmap);
+
+void tft_draw_circle(int16_t x0, int16_t y0, int16_t r, uint16_t color);
 
 #endif  // __ILI9341_H__

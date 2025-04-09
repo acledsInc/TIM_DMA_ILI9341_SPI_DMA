@@ -19,12 +19,12 @@
 #define FONT_WIDTH  5  // Font width
 #define FONT_HEIGHT 7  // Font height
 
+//#include "fonts.h"
 #define ILI9341_X_OFFSET 0
 #define ILI9341_Y_OFFSET 0
 
 // CH32V003 Pin Definitions
-#define SPI_RESET 0  // PC0 // not used
-
+//#define SPI_RESET 0  // PC0 // not used
 #define SPI_DC    3  // PC3
 #define SPI_CS    4  // PC4
 #define SPI_SCLK  5  // PC5
@@ -34,6 +34,30 @@
 #define CTLR1_SPE_Set      ((uint16_t)0x0040)
 #define GPIO_CNF_OUT_PP    0x00
 #define GPIO_CNF_OUT_PP_AF 0x08
+
+#include "ch32v00x.h"
+
+#define SPI_DATA_8B()			(SPI1->CTLR1 &= ~SPI_CTLR1_DFF)
+#define SPI_DATA_16B()			(SPI1->CTLR1 |= SPI_CTLR1_DFF)
+#define SPI_DMA_MEM_INC_ON()	(DMA1_Channel3->CFGR |= DMA_CFGR1_MINC)
+#define SPI_DMA_MEM_INC_OFF()	(DMA1_Channel3->CFGR &= ~DMA_CFGR1_MINC)
+
+typedef enum 
+{
+	ili9341_landscape = 0,
+	ili9341_portrait
+} ili9341_orient_mode_t;
+
+typedef struct 
+{
+	uint16_t width;
+	uint16_t height;
+	ili9341_orient_mode_t lcd_orientation;
+} ili9341_t;
+
+uint16_t ili9341_x;
+uint16_t ili9341_y;
+ili9341_t ILI9341;
 
 static u16 _cursor_x = 0;
 static u16 _cursor_y  = 0;      // Cursor position (x, y)
@@ -149,46 +173,105 @@ static void SPI_send_DMA(const uint8_t* buffer, uint16_t size, uint16_t repeat)
     DMA1_Channel3->CFGR &= ~DMA_CFGR1_EN; // Turn off channel
 }
 
+//-------------------------------------------------------------
 // brief Send Data Directly Through SPI
 // param data 8-bit data
-static void SPI_send(uint8_t data)
+//-------------------------------------------------------------
+static void SPI_send8(uint8_t data)
 {
+	while((SPI1->STATR & SPI_STATR_TXE) != SPI_STATR_TXE){};
     // Send byte
     SPI1->DATAR = data;
 
     // Waiting for transmission complete
-    while (!(SPI1->STATR & SPI_STATR_TXE));
+    //while (!(SPI1->STATR & SPI_STATR_TXE));
+    while((SPI1->STATR & SPI_STATR_BSY) == SPI_STATR_BSY){};
+ }
+
+void spi_send16(uint16_t data)
+{
+	while((SPI1->STATR & SPI_STATR_TXE) != SPI_STATR_TXE){};
+	SPI1->DATAR = data;
+	while((SPI1->STATR & SPI_STATR_BSY) == SPI_STATR_BSY){};
 }
 
+uint8_t spi_recv8(uint8_t dummy)
+{
+	SPI1->DATAR = dummy;
+	while((SPI1->STATR & SPI_STATR_RXNE) != SPI_STATR_RXNE){};
+	
+	return (uint8_t)SPI1->DATAR;
+}
+
+void spi_send_dma16(uint16_t *data, uint16_t size)
+{
+	//Change data length to 16bit
+	SPI_DATA_16B();
+	//First disable DMA
+	DMA1_Channel3->CFGR &= ~DMA_CFGR3_EN;
+	//Buffer address
+	DMA1_Channel3->MADDR = (uint32_t)data;
+	//Number of data transfer
+	DMA1_Channel3->CNTR = (uint16_t)size;
+	//Enable DMA Channel
+	DMA1_Channel3->CFGR |= DMA_CFGR3_EN;	
+}
+//-------------------------------------------------------------
+// End of spi_send from spi.c
+//-------------------------------------------------------------
+
+//-------------------------------------------------------------
 // brief Send 8-Bit Command
 // param cmd 8-bit command
+//-------------------------------------------------------------
 static void write_command_8(uint8_t cmd)
 {
-    //COMMAND_MODE();
+	SPI_DATA_8B();
     GPIO_ResetBits(GPIOC, GPIO_Pin_3);    // DC = low
 
-    SPI_send(cmd);
+	GPIO_ResetBits(GPIOC, SPI_CS);	// ILI9341_CS_ON();
+    SPI_send8(cmd);
+    //GPIO_SetBits(GPIOC, SPI_CS);	// ILI9341_CS_OFF();
 }
 
 /// \brief Send 8-Bit Data
 /// \param cmd 8-bit data
 static void write_data_8(uint8_t data)
 {
-    //DATA_MODE();
+	SPI_DATA_8B();
     GPIO_SetBits(GPIOC, GPIO_Pin_3);    // DC = high
 
-    SPI_send(data);
+	GPIO_ResetBits(GPIOC, SPI_CS);	// ILI9341_CS_ON();
+    SPI_send8(data);
+    //GPIO_SetBits(GPIOC, SPI_CS);	// ILI9341_CS_OFF();
 }
 
 /// \brief Send 16-Bit Data
 /// \param cmd 16-bit data
 static void write_data_16(uint16_t data)
 {
-    //DATA_MODE();
+	SPI_DATA_16B(); // <--- Bug ???
     GPIO_SetBits(GPIOC, GPIO_Pin_3);    // DC = high
 
-    SPI_send(data >> 8);
-    SPI_send(data);
+	GPIO_ResetBits(GPIOC, SPI_CS);	// ILI9341_CS_ON();
+    //SPI_send8(data >> 8);
+    //SPI_send8(data);
+	spi_send16(data);
+    //GPIO_SetBits(GPIOC, SPI_CS);	// ILI9341_CS_OFF();
+ }
+
+void write_dma_data16(uint16_t *data, uint16_t size)
+{
+	GPIO_SetBits(GPIOC, SPI_DC);	// ILI9341_DC_DATA();
+
+	GPIO_ResetBits(GPIOC, SPI_CS);	// ILI9341_CS_ON();
+	//Send data
+	spi_send_dma16(data, size);
+	//Wait end of transfer
+	while((DMA1->INTFR & DMA_TCIF3) != DMA_TCIF3){};
+
+	//Clear DMA global flag  
+	DMA1->INTFCR |= DMA_CGIF3;
 }
 
 // ST7735 Gamma Adjustments (pos. polarity), 16 args.
@@ -290,6 +373,16 @@ void tft_init(void)
 
 	//write_command_8(ILI9341_RAMWR); // 0x2C =Memory Write
     GPIO_SetBits(GPIOC, GPIO_Pin_4);    // CS = high
+}
+
+void tft_cursor_position(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2) 
+{
+	write_command_8(0x2A);  // ILI9341_COLUMN_ADDR
+	write_data_16(x1);
+	write_data_16(x2);
+	write_command_8(0x2B);  // ILI9341_PAGE_ADDR
+	write_data_16(y1);
+	write_data_16(y2);
 }
 
 /// \brief Set Cursor Position for Print Functions
@@ -423,7 +516,7 @@ void tft_print_number(int32_t num, uint16_t width)
     }
 
     // Calculate alignment
-    num_width = (11 - position) * (FONT_WIDTH + 1) - 1;
+    num_width = (11 - position) * (FONT_WIDTH +1) - 1;
     if (width > num_width)
     {
         _cursor_x += width - num_width;
@@ -676,3 +769,41 @@ void tft_draw_line(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t colo
         _tft_draw_line_bresenham(x0, y0, x1, y1, color);
     }
 }
+
+void tft_draw_circle(int16_t x0, int16_t y0, int16_t r, uint16_t color) 
+{
+	int16_t f = 1 - r;
+	int16_t ddF_x = 1;
+	int16_t ddF_y = -2 * r;
+	int16_t x = 0;
+	int16_t y = r;
+
+    tft_draw_pixel(x0, y0 + r, color);
+    tft_draw_pixel(x0, y0 - r, color);
+    tft_draw_pixel(x0 + r, y0, color);
+    tft_draw_pixel(x0 - r, y0, color);
+
+    while (x < y) 
+	{
+        if (f >= 0) 
+		{
+            y--;
+            ddF_y += 2;
+            f += ddF_y;
+        }
+        x++;
+        ddF_x += 2;
+        f += ddF_x;
+
+        tft_draw_pixel(x0 + x, y0 + y, color);
+        tft_draw_pixel(x0 - x, y0 + y, color);
+        tft_draw_pixel(x0 + x, y0 - y, color);
+        tft_draw_pixel(x0 - x, y0 - y, color);
+
+        tft_draw_pixel(x0 + y, y0 + x, color);
+        tft_draw_pixel(x0 - y, y0 + x, color);
+        tft_draw_pixel(x0 + y, y0 - x, color);
+        tft_draw_pixel(x0 - y, y0 - x, color);
+    }
+}
+

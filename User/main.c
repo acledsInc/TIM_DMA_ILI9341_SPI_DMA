@@ -18,12 +18,6 @@
 #include "debug.h"
 #include <stdint.h>
 #include <stdbool.h>
-
-#include "ch32v00x_gpio.h"
-#include "ch32v00x_tim.h"
-#include "ch32v00x_dma.h"
-#include "ch32v00x_spi.h"
-#include "ch32v00x_adc.h"
 #include <stdio.h>
 
 ///-|----------------------|----------|--------------------|
@@ -36,7 +30,7 @@
 /// | 320x240 Graphic data | DMA1-CH3 | SPI-ILI9341        |
 ///-|----------------------|----------|--------------------|
 
-#include "ili9341.h"
+#include "ILI9341.h"
 ///---------------------------------------------------------------|
 /// | CH32V003 Port  | ILI9341 Pin | LCD Description              |
 ///-|----------------|------------|-------------------------------|
@@ -263,6 +257,8 @@ void DMA1_Channel5_IRQHandler(void)
 // TIM2_INT_Init(USER_DELAY -1, 48 -1);
 // TIM2 Clock =1us
 //--------------------------------------------------------
+static u8 timer2_flag =1;
+
 void TIM2_INT_Init(u32 arr, u16 psc)
 {
     TIM_TimeBaseInitTypeDef TIMBase_InitStruct;
@@ -287,7 +283,9 @@ void TIM2_INT_Init(u32 arr, u16 psc)
     NVIC_InitStruct.NVIC_IRQChannelSubPriority = 5;
     NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStruct);
-    //TIM_Cmd(TIM2, ENABLE);  //  Start TIM2
+    TIM_Cmd(TIM2, ENABLE);  //  Start TIM2
+
+    timer2_flag =1; // set timer2 flag
 }
 
 //---------------------------------------------------------------------
@@ -308,8 +306,6 @@ void TIM1_UP_IRQHandler(void)
 // TIM2_IRQHandler handles of TIM2 interrupt
 // Interrupt flag is set
 //---------------------------------------------------------------------
-u8 timer2_flag =0;
-
 void TIM2_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 void TIM2_IRQHandler(void)
 {
@@ -324,16 +320,6 @@ void TIM2_IRQHandler(void)
        // Clear TIM2 flag
        TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
    }
-}
-
-// user timer =5 sec
-void start_TIM2(uint16_t user_ms)
-{
-    // user interval timer =TIM2 clock =1ms
-    TIM2_INT_Init(user_ms, 48000);   // ARR =5,000ms
-    TIM_Cmd(TIM2, ENABLE);        // start user code
-
-    timer2_flag =1; // set timer2 flag
 }
 
 //---------------------------------------------------------------------
@@ -467,18 +453,18 @@ void disp_ADC(void)
     adc_val =(u32)(ave_val);    // save for the feedback control
     mv_val =(ave_val *3250) /1023; // make [mV] from measured VCC value =3.25V
 
-    tft_set_cursor(0, 88);
+    tft_set_cursor(0, 98);
     tft_set_color(GREEN);
     tft_print("ADC1-CH7: ");
 
     // binary to 4 digit decimal as right align
     sprintf(dec_str, "%4d", mv_val);
-    tft_set_cursor(54, 88);
+    tft_set_cursor(54, 98);
     tft_set_color(YELLOW);
     tft_print(dec_str);
 
     // display unit =mV
-    tft_set_cursor(84, 88);
+    tft_set_cursor(84, 98);
     tft_set_color(GREEN);
     tft_print("mV");
 }
@@ -490,7 +476,7 @@ u32 timer2_cnt =0;  // Start user time =0ms
 
 void disp_TIM2(void)
 {
-    tft_set_cursor(0, 98);
+    tft_set_cursor(0, 106);
     tft_set_color(GREEN);
     tft_print("TIM2-CNT: ");
 
@@ -499,12 +485,12 @@ void disp_TIM2(void)
 
     // 32 bit binary to 4 digit decimal as right align
     sprintf(dec_str, "%4d", timer2_cnt);
-    tft_set_cursor(54, 98);
+    tft_set_cursor(54, 106);
     tft_set_color(CYAN);
     tft_print(dec_str);
 
     // Display unit =[ms]
-    tft_set_cursor(84, 98);
+    tft_set_cursor(84, 106);
     tft_set_color(GREEN);
     tft_print("ms");
 }
@@ -537,6 +523,8 @@ void disp_MENU(void)
     tft_print("7. Fill rectangle");
     tft_set_cursor(0, 72);
     tft_print("8. Move Rectangle");
+    tft_set_cursor(0, 80);
+    tft_print("9. Random Circle");
 }
 
 //---------------------------------------------------------------------
@@ -574,7 +562,7 @@ uint16_t rand16(void)
                     (lfsr >> NOISE_POLY_TAP3));
         lfsr     = (lfsr << 1) | (new_data & 1);
     }
-    return (lfsr & NOISE_MASK) *5;
+    return (lfsr & NOISE_MASK) *3;
 }
 
 //---------------------------------------------------------------------
@@ -584,13 +572,17 @@ void random_dot()
 {
     tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
 
-    // user timer = TIM2-CNT (0~9999)
-    start_TIM2(2000);
+    // user interval timer =TIM2 clock =1ms
+    TIM2_INT_Init(1000, 48000);   // ARR =1sec
     while(timer2_flag)
     {
         for (uint16_t i = 0; i < ILI9341_WIDTH; i++)
         {
-            tft_draw_pixel(rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, colors[rand16() %19]);
+            u16 c =colors[rand16() %19];
+            tft_draw_pixel(rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, c);
+            tft_draw_pixel((rand16() %ILI9341_WIDTH) +1, (rand16() %ILI9341_HEIGHT), c);
+            tft_draw_pixel((rand16() %ILI9341_WIDTH), (rand16() %ILI9341_HEIGHT) +1, c);
+            tft_draw_pixel((rand16() %ILI9341_WIDTH) +1, (rand16() %ILI9341_HEIGHT) +1, c);
         }
     }
 }
@@ -602,8 +594,8 @@ void scan_hline()
 {
     tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
 
-    // user timer = TIM2-CNT (0~9999)
-    start_TIM2(2000);
+    // user interval timer =TIM2 clock =1ms
+    TIM2_INT_Init(1000, 48000);   // ARR =1sec
     while(timer2_flag)
     {
         for (uint16_t i = 0; i < ILI9341_WIDTH; i++)
@@ -620,18 +612,14 @@ void scan_vline()
 {
     tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
 
-    // user timer = TIM2-CNT (0~9999)
-    start_TIM2(2000);
+    // user interval timer =TIM2 clock =1ms
+    TIM2_INT_Init(1000, 48000);   // ARR =1sec
     while(timer2_flag)
     {
         for (uint16_t i = 0; i < ILI9341_WIDTH; i++)
         {
             tft_draw_line(i, 0, i, ILI9341_HEIGHT, colors[rand16() %19]);
         }
-        for (uint16_t i = 0; i < ILI9341_WIDTH; i++)
-        {
-            tft_draw_line(i, 0, i, ILI9341_HEIGHT, colors[rand16() %19]);
-        }    
     }
 }
 
@@ -642,8 +630,8 @@ void random_line(void)
 {
     tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
 
-    // user timer = TIM2-CNT (0~9999)
-    start_TIM2(2000);
+    // user interval timer =TIM2 clock =1ms
+    TIM2_INT_Init(1000, 48000);   // ARR =1sec
     while(timer2_flag)
     {
         tft_draw_line(rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, colors[rand16() %19]);
@@ -657,8 +645,8 @@ void center_rect(void)
 {
     tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
 
-    // user timer = TIM2-CNT (0~9999)
-    start_TIM2(2000);
+    // user interval timer =TIM2 clock =1ms
+    TIM2_INT_Init(1000, 48000);   // ARR =1sec
     while(timer2_flag)
     {
         for (uint8_t i = 0; i < 120; i++)
@@ -675,8 +663,8 @@ void random_rect(void)
 {
     tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
 
-    // user timer = TIM2-CNT (0~9999)
-    start_TIM2(2000);
+    // user interval timer =TIM2 clock =1ms
+    TIM2_INT_Init(1000, 48000);   // ARR =1sec
     while(timer2_flag)
     {
         for (uint8_t i = 0; i < 120; i++)
@@ -693,8 +681,8 @@ void fill_rect(void)
 {
     tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
 
-    // user timer = TIM2-CNT (0~9999)
-    start_TIM2(2000);
+    // user interval timer =TIM2 clock =1ms
+    TIM2_INT_Init(1000, 48000);   // ARR =1sec
     while(timer2_flag)
     {
         for (uint8_t i = 0; i < 120; i++)
@@ -712,15 +700,15 @@ void move_rect(void)
     tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
 
     frame =1000;
-    uint8_t x =0, y =0, step_x =2, step_y =2;
+    u16 x =0, y =0, step_x =2, step_y =2;
     while (frame-- >0)
     {
         uint16_t bg = colors[rand16() %19];
-        tft_fill_rect(x, y, 80, 16, bg);
+        tft_fill_rect(x, y, 40, 20, bg);
         tft_set_color(colors[rand16() %19]);
         
         x += step_x;
-        if (x >= ILI9341_WIDTH -80)
+        if (x >= ILI9341_WIDTH -40)
         {
             step_x = -step_x;
         }
@@ -728,6 +716,24 @@ void move_rect(void)
         if (y >= ILI9341_HEIGHT -20)
         {
             step_y = -step_y;
+        }
+    }
+}
+
+//---------------------------------------------------------------------
+// Random Circle
+//---------------------------------------------------------------------
+void random_circ(void)
+{
+    tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
+
+    // user interval timer =TIM2 clock =1ms
+    TIM2_INT_Init(1000, 48000);   // ARR =1sec
+    while(timer2_flag)
+    {
+        for (uint8_t i = 0; i < 80; i++)
+        {
+            tft_draw_circle(rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, 10, colors[rand16() % 19]);
         }
     }
 }
@@ -748,6 +754,8 @@ void demo_LCD(void)
 
     fill_rect();
     move_rect();
+
+    random_circ();
 }
 
 //---------------------------------------------------------------------
@@ -794,10 +802,11 @@ int main(void)
         //tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
         disp_MENU();
 
-        // Dispaly ADC-CH7 (0~1023) and TIM2-CNT (0~9999)
-        start_TIM2(5000);   // user timer =5 sec
+        // user interval timer =TIM2 clock =1ms
+        TIM2_INT_Init(5000, 48000);   // ARR =5sec
         while(timer2_flag)
         {
+            // Dispaly ADC-CH7 (0~1023) and TIM2-CNT (0~9999)
             disp_ADC();     // Read ADC binary and decimal display [mV]
             disp_TIM2();    // Display timer2 [ms]
 
