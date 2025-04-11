@@ -44,7 +44,7 @@ This timer used TIM2->CNT get timer2 counter value by "on the fly" and diaplay i
 while 5 sec as end of timer2 (0 - 9999ms), after 5 sec Start 10 kind of graphic display to the LCD screen.
 ![ili9341-main-menu](https://github.com/user-attachments/assets/8d12af44-7f03-4a3f-9130-59c3272f2666)
 
-High speed LCD graphic demo with SPI-DMA transfer of the main function is intented to examine efect of TIM1 SPWM generation. Delay_Ms timer do not match delay time when using many DMA operation. I was fix it by used TIM2 interrupt for the each graphic display timer. 
+High speed LCD graphic demo with SPI-DMA transfer of the main function is intented to examine efect of TIM1 SPWM generation. Delay_Ms timer do not match delay time when using many DMA operation. I was fix it by used TIM2 interrupt for the each different graphic display timer. 
 
 Below screen shots are graphic demo on the TFT LCD ILI9341.
 ![ILI9341-Random-Dot](https://github.com/user-attachments/assets/00d75460-e9b7-4c21-861d-69b98c488a89)
