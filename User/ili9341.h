@@ -182,5 +182,6 @@ void tft_fill_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint
 void tft_draw_bitmap(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint8_t* bitmap);
 
 void tft_draw_circle(int16_t x0, int16_t y0, int16_t r, uint16_t color);
+void tft_fill_circle(int16_t x0, int16_t y0, int16_t r, uint16_t color);
 
 #endif  // __ILI9341_H__

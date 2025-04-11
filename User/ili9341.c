@@ -59,11 +59,11 @@ uint16_t ili9341_x;
 uint16_t ili9341_y;
 ili9341_t ILI9341;
 
-static u16 _cursor_x = 0;
-static u16 _cursor_y  = 0;      // Cursor position (x, y)
-static u16 _color  = WHITE;  // Color
-static u16 _bg_color = BLACK;  // Background color
-static u8  _buffer[128 << 1] = {0};    // DMA buffer, long enough to fill a row.
+static u16 _cursor_x =0;
+static u16 _cursor_y =0;        // Cursor position (x, y)
+static u16 _color  =WHITE;      // Color
+static u16 _bg_color =BLACK;    // Background color
+static u8  _buffer[128 << 1] = {0}; // DMA buffer, long enough to fill a row.
 
 // brief Initialize ST7735
 // details Configure SPI, DMA, and RESET/DC/CS lines.
@@ -112,6 +112,7 @@ static void SPI_init()
     SPI_InitStructure.SPI_CRCPolynomial = 7;
     SPI_InitStructure.SPI_Direction = SPI_Direction_1Line_Tx;
     SPI_Init(SPI1, &SPI_InitStructure);
+    
     SPI_I2S_DMACmd(SPI1, SPI_I2S_DMAReq_Tx, ENABLE);
     SPI_Cmd(SPI1, ENABLE);
 
@@ -380,6 +381,7 @@ void tft_cursor_position(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
 	write_command_8(0x2A);  // ILI9341_COLUMN_ADDR
 	write_data_16(x1);
 	write_data_16(x2);
+
 	write_command_8(0x2B);  // ILI9341_PAGE_ADDR
 	write_data_16(y1);
 	write_data_16(y2);
@@ -434,12 +436,12 @@ static void tft_set_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 /// \details DMA accelerated.
 void tft_print_char(char c)
 {
-    const unsigned char* start = &font[c + (c << 2)];
+    const unsigned char* start = &font[c +(c << 2)];
 
     uint16_t sz = 0;
-    for (uint8_t i = 0; i < FONT_HEIGHT; i++)
+    for (uint16_t i = 0; i < FONT_HEIGHT; i++)
     {
-        for (uint8_t j = 0; j < FONT_WIDTH; j++)
+        for (uint16_t j = 0; j < FONT_WIDTH; j++)
         {
             if ((*(start + j)) & (0x01 << i))
             {
@@ -475,7 +477,7 @@ void tft_print(const char* str)
     while (*str)
     {
         tft_print_char(*str++);
-        _cursor_x += FONT_WIDTH + 1;
+        _cursor_x += FONT_WIDTH +1;
     }
 }
 
@@ -516,12 +518,11 @@ void tft_print_number(int32_t num, uint16_t width)
     }
 
     // Calculate alignment
-    num_width = (11 - position) * (FONT_WIDTH +1) - 1;
+    num_width = (11 - position) *(FONT_WIDTH +1) -1;
     if (width > num_width)
     {
-        _cursor_x += width - num_width;
+        _cursor_x += width -num_width;
     }
-
     tft_print(&str[position]);
 }
 
@@ -535,14 +536,10 @@ void tft_draw_pixel(uint16_t x, uint16_t y, uint16_t color)
     x += ILI9341_X_OFFSET;
     y += ILI9341_Y_OFFSET;
 
-    //START_WRITE();
-    GPIO_ResetBits(GPIOC, GPIO_Pin_4);   // CS = low
-
+    GPIO_ResetBits(GPIOC, GPIO_Pin_4);   //START_WRITE();
     tft_set_window(x, y, x, y);
     write_data_16(color);
-
-    //END_WRITE();
-    GPIO_SetBits(GPIOC, GPIO_Pin_4);    // CS = high
+    GPIO_SetBits(GPIOC, GPIO_Pin_4);    //END_WRITE();
 }
 
 /// \brief Fill a Rectangle Area
@@ -564,18 +561,11 @@ void tft_fill_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint
         _buffer[sz++] = color;
     }
 
-    //START_WRITE();
-    GPIO_ResetBits(GPIOC, GPIO_Pin_4);   // CS = low
-
+    GPIO_ResetBits(GPIOC, GPIO_Pin_4);   //START_WRITE();
     tft_set_window(x, y, x + width - 1, y + height - 1);
-
-    //DATA_MODE();
-    GPIO_SetBits(GPIOC, GPIO_Pin_3);    // DC = high
-
+    GPIO_SetBits(GPIOC, GPIO_Pin_3);    //DATA_MODE();
     SPI_send_DMA(_buffer, sz, height);
-
-    //END_WRITE();
-    GPIO_SetBits(GPIOC, GPIO_Pin_4);    // CS = high
+    GPIO_SetBits(GPIOC, GPIO_Pin_4);    //END_WRITE();
 }
 
 /// \brief Draw a Bitmap
@@ -589,18 +579,11 @@ void tft_draw_bitmap(uint16_t x, uint16_t y, uint16_t width, uint16_t height, co
     x += ILI9341_X_OFFSET;
     y += ILI9341_Y_OFFSET;
 
-    //START_WRITE();
-    GPIO_ResetBits(GPIOC, GPIO_Pin_4);   // CS = low
-
-    tft_set_window(x, y, x + width - 1, y + height - 1);
-
-    //DATA_MODE();
-    GPIO_SetBits(GPIOC, GPIO_Pin_3);    // DC = high
-
+    GPIO_SetBits(GPIOC, GPIO_Pin_3);    //DATA_MODE();
+    GPIO_ResetBits(GPIOC, GPIO_Pin_4);  //START_WRITE();
+    tft_set_window(x, y, x + width -1, y + height -1);
     SPI_send_DMA(bitmap, width * height << 1, 1);
-
-    //END_WRITE();
-    GPIO_SetBits(GPIOC, GPIO_Pin_4);    // CS = high
+    GPIO_SetBits(GPIOC, GPIO_Pin_4);    //END_WRITE();
 }
 
 /// \brief Draw a Vertical Line Fast
@@ -622,18 +605,11 @@ static void _tft_draw_fast_v_line(int16_t x, int16_t y, int16_t h, uint16_t colo
         _buffer[sz++] = color;
     }
 
-    //START_WRITE();
-    GPIO_ResetBits(GPIOC, GPIO_Pin_4);   // CS = low
-
+    GPIO_ResetBits(GPIOC, GPIO_Pin_4);   //START_WRITE();
     tft_set_window(x, y, x, y + h - 1);
-
-    //DATA_MODE();
-    GPIO_SetBits(GPIOC, GPIO_Pin_3);    // DC = high
-
+    GPIO_SetBits(GPIOC, GPIO_Pin_3);     // DATA_MODE();   
     SPI_send_DMA(_buffer, sz, 1);
-
-    //END_WRITE();
-    GPIO_SetBits(GPIOC, GPIO_Pin_4);    // CS = high
+    GPIO_SetBits(GPIOC, GPIO_Pin_4);    //END_WRITE();
 }
 
 /// \brief Draw a Horizontal Line Fast
@@ -654,19 +630,12 @@ static void _tft_draw_fast_h_line(int16_t x, int16_t y, int16_t w, uint16_t colo
         _buffer[sz++] = color >> 8;
         _buffer[sz++] = color;
     }
-
-    //START_WRITE();
-    GPIO_ResetBits(GPIOC, GPIO_Pin_4);   // CS = low
-
-    tft_set_window(x, y, x + w - 1, y);
-
-    //DATA_MODE();
-    GPIO_SetBits(GPIOC, GPIO_Pin_3);    // DC = high
-
+    
+    GPIO_ResetBits(GPIOC, GPIO_Pin_4);   //START_WRITE();
+    tft_set_window(x, y, x +w -1, y);
+    GPIO_SetBits(GPIOC, GPIO_Pin_3);    //DATA_MODE();
     SPI_send_DMA(_buffer, sz, 1);
-
-    //END_WRITE();
-    GPIO_SetBits(GPIOC, GPIO_Pin_4);    // CS = high
+    GPIO_SetBits(GPIOC, GPIO_Pin_4);    //END_WRITE();
 }
 
 // Draw line helpers
@@ -678,8 +647,6 @@ static void _tft_draw_fast_h_line(int16_t x, int16_t y, int16_t w, uint16_t colo
         b         = t;      \
     }
 
-/// \brief Bresenham's line algorithm from Arduino GFX
-/// https://github.com/moononournation/Arduino_GFX/blob/master/src/Arduino_GFX.cpp
 /// \param x0 Start X coordinate
 /// \param y0 Start Y coordinate
 /// \param x1 End X coordinate
@@ -778,32 +745,67 @@ void tft_draw_circle(int16_t x0, int16_t y0, int16_t r, uint16_t color)
 	int16_t x = 0;
 	int16_t y = r;
 
-    tft_draw_pixel(x0, y0 + r, color);
-    tft_draw_pixel(x0, y0 - r, color);
-    tft_draw_pixel(x0 + r, y0, color);
-    tft_draw_pixel(x0 - r, y0, color);
+    tft_draw_pixel(x0, y0 + r, color);  // 180 deg point
+    tft_draw_pixel(x0, y0 - r, color);  // 360 deg point
+    tft_draw_pixel(x0 + r, y0, color);  // 90 deg point
+    tft_draw_pixel(x0 - r, y0, color);  // 270 deg point
 
+    // for (x =0; x < r; (x++; f +=2))
     while (x < y) 
 	{
+        // for (y =r; y+2 >0; (y--; f +=2)) 
         if (f >= 0) 
 		{
-            y--;
+            y--;    // y = y -1
             ddF_y += 2;
-            f += ddF_y;
+            f += ddF_y; // f = f +2 
         }
-        x++;
+        x++;    // x = x +1
         ddF_x += 2;
-        f += ddF_x;
+        f += ddF_x; // f = f +2
+        
+        // x =(0~r), y =(r ~0)
+        tft_draw_pixel(x0 +x, y0 +y, color);  // 135~180
+        tft_draw_pixel(x0 -x, y0 +y, color);  // 225~180
+        tft_draw_pixel(x0 +x, y0 -y, color);  // 360~45
+        tft_draw_pixel(x0 -x, y0 -y, color);  // 315~360 
 
-        tft_draw_pixel(x0 + x, y0 + y, color);
-        tft_draw_pixel(x0 - x, y0 + y, color);
-        tft_draw_pixel(x0 + x, y0 - y, color);
-        tft_draw_pixel(x0 - x, y0 - y, color);
-
-        tft_draw_pixel(x0 + y, y0 + x, color);
-        tft_draw_pixel(x0 - y, y0 + x, color);
-        tft_draw_pixel(x0 + y, y0 - x, color);
-        tft_draw_pixel(x0 - y, y0 - x, color);
+        tft_draw_pixel(x0 +y, y0 +x, color);
+        tft_draw_pixel(x0 -y, y0 +x, color);
+        tft_draw_pixel(x0 +y, y0 -x, color);
+        tft_draw_pixel(x0 -y, y0 -x, color);
     }
 }
 
+void tft_fill_circle(int16_t x0, int16_t y0, int16_t r, uint16_t color) 
+{
+    int x = r;
+    int y = 0;
+    int xChange = 1 - (r << 1);
+    int yChange = 0;
+    int radiusError = 0;
+
+    while (x >= y)
+    {
+        for (int i = x0 - x; i <= x0 + x; i++)
+        {
+            tft_draw_pixel(i, y0 +y, color);
+            tft_draw_pixel(i, y0 -y, color);
+        }
+        for (int i = x0 -y; i <= x0 +y; i++)
+        {
+            tft_draw_pixel(i, y0 +x, color);
+            tft_draw_pixel(i, y0 -x, color);
+        }
+
+        y++;
+        radiusError += yChange;
+        yChange += 2;
+        if (((radiusError << 1) + xChange) > 0)
+        {
+            x--;
+            radiusError += xChange;
+            xChange += 2;
+        }
+    }
+}

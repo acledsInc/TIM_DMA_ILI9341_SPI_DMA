@@ -453,18 +453,18 @@ void disp_ADC(void)
     adc_val =(u32)(ave_val);    // save for the feedback control
     mv_val =(ave_val *3250) /1023; // make [mV] from measured VCC value =3.25V
 
-    tft_set_cursor(0, 98);
+    tft_set_cursor(0, 108);
     tft_set_color(GREEN);
     tft_print("ADC1-CH7: ");
 
     // binary to 4 digit decimal as right align
     sprintf(dec_str, "%4d", mv_val);
-    tft_set_cursor(54, 98);
+    tft_set_cursor(54, 108);
     tft_set_color(YELLOW);
     tft_print(dec_str);
 
     // display unit =mV
-    tft_set_cursor(84, 98);
+    tft_set_cursor(84, 108);
     tft_set_color(GREEN);
     tft_print("mV");
 }
@@ -476,7 +476,7 @@ u32 timer2_cnt =0;  // Start user time =0ms
 
 void disp_TIM2(void)
 {
-    tft_set_cursor(0, 106);
+    tft_set_cursor(0, 116);
     tft_set_color(GREEN);
     tft_print("TIM2-CNT: ");
 
@@ -485,12 +485,12 @@ void disp_TIM2(void)
 
     // 32 bit binary to 4 digit decimal as right align
     sprintf(dec_str, "%4d", timer2_cnt);
-    tft_set_cursor(54, 106);
+    tft_set_cursor(54, 116);
     tft_set_color(CYAN);
     tft_print(dec_str);
 
     // Display unit =[ms]
-    tft_set_cursor(84, 106);
+    tft_set_cursor(84, 116);
     tft_set_color(GREEN);
     tft_print("ms");
 }
@@ -520,11 +520,13 @@ void disp_MENU(void)
     tft_set_cursor(0, 56);
     tft_print("6. Random Rectangle");
     tft_set_cursor(0, 64);
-    tft_print("7. Fill rectangle");
+    tft_print("7. Filled rectangle");
     tft_set_cursor(0, 72);
     tft_print("8. Move Rectangle");
     tft_set_cursor(0, 80);
     tft_print("9. Random Circle");
+    tft_set_cursor(0, 88);
+    tft_print("10. Filled Circle");
 }
 
 //---------------------------------------------------------------------
@@ -733,7 +735,25 @@ void random_circ(void)
     {
         for (uint8_t i = 0; i < 80; i++)
         {
-            tft_draw_circle(rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, 10, colors[rand16() % 19]);
+            tft_draw_circle(rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, 10, colors[rand16() %19]);
+        }
+    }
+}
+
+//---------------------------------------------------------------------
+// Filled Random Circle
+//---------------------------------------------------------------------
+void fill_circ(void)
+{
+    tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
+
+    // user interval timer =TIM2 clock =1ms
+    TIM2_INT_Init(1000, 48000);   // ARR =1sec
+    while(timer2_flag)
+    {
+        for (uint8_t i = 0; i < 80; i++)
+        {
+            tft_fill_circle(rand16() %ILI9341_WIDTH, rand16() %ILI9341_HEIGHT, 10, colors[rand16() %19]);
         }
     }
 }
@@ -756,6 +776,7 @@ void demo_LCD(void)
     move_rect();
 
     random_circ();
+    fill_circ();
 }
 
 //---------------------------------------------------------------------
