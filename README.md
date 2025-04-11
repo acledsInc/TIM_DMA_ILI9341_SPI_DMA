@@ -11,7 +11,7 @@ TIM1 required continuously generating 4 PWM pulses at TIM1-CH1 (PD2), TIM1-CH1N 
 For example TIM1-BKIN (PC2) can be use external SPWM outputs ON - OFF switch.
 ![CH32V003-TIM1-SPWM-Output](https://github.com/user-attachments/assets/35a19328-bc73-448f-ac94-3d13ce385cb1)
 ![SPWM-CH1-PD2-Wave](https://github.com/user-attachments/assets/0d7e0965-c4c8-4f8c-aff1-ae9d0269faf8)
-![SPWM-CH1N-PD0-Wave](https://github.com/user-attachments/assets/b19eab46-e741-4c95-a5ad-089550b6a88d)
+![SPWM-CH1N-PD0-Wave](https://github.com/user-attachments/assets/d9065acb-9148-42ce-beda-7ac9b6fd3ad2)
 
 We have 2 way of make 220Vac 60Hz SPWM inverter, One is 12Vdc to 220Vac used 60Hz low frequency transformer.
 Another way is 400Vdc to 220Vac 60Hz with AC output LC filter without low frequency transformer.
