@@ -41,8 +41,8 @@ and SPWM duty (sine wave amplitude) feedback control. (not implimented yet).
 
 TIM2 can be use msec timer for user delay timer as TIM2 interrupt service.
 This timer used TIM2->CNT get timer2 counter value by "on the fly" and diaplay in main menu 
-while 5 sec as end of timer2 (0 - 9999ms), after 5 sec Start 9 kind of graphic display to the LCD screen.
-![ili9341-main-menu](https://github.com/user-attachments/assets/8156a99d-def2-475e-bb35-8c65d039847e)
+while 5 sec as end of timer2 (0 - 9999ms), after 5 sec Start 10 kind of graphic display to the LCD screen.
+![ili9341-main-menu](https://github.com/user-attachments/assets/8d12af44-7f03-4a3f-9130-59c3272f2666)
 
 High speed LCD graphic demo with SPI-DMA transfer of the main function is intented to examine efect of TIM1 SPWM generation. Delay_Ms timer do not match delay time when using many DMA opration. I was fix it by used TIM2 interrupt for the each graphic display timer. 
 
@@ -55,7 +55,8 @@ Below screen shots are graphic demo on the TFT LCD ILI9341.
 ![ILI9341-random-rect](https://github.com/user-attachments/assets/74fdc83e-6894-4c84-b61c-45b6a1233168)
 ![ili9341-fill-rect](https://github.com/user-attachments/assets/47aeb06b-14ef-4bad-b8c3-9e1644b9fe00)
 ![ili9341-move-rectangle](https://github.com/user-attachments/assets/f020c294-46e1-4230-bd6f-a86a06a1c82a)
-![ili9341-random-circle](https://github.com/user-attachments/assets/0700df02-02ad-4975-8ec5-acdfffe6fe1b)
+![ili9341-random-circle](https://github.com/user-attachments/assets/aa8f631c-8608-4c70-99cd-9ec00d9e85f0)
+![ili9341-fill-circ](https://github.com/user-attachments/assets/18070c62-80db-4f15-99d5-894aa592cd9e)
 
 Recommanded schematic diagram of WCH-CH32V003F4P6 ILI9341 demo.
 ![ch32v003f4u6-tssop20-dev-kit-sch](https://github.com/user-attachments/assets/30cffacf-fc64-4348-92b4-b646d2f82b91)
