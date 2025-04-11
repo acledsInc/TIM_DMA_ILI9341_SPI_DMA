@@ -61,7 +61,7 @@ Below screen shots are graphic demo on the TFT LCD ILI9341.
 Recommanded schematic diagram of WCH-CH32V003F4P6 ILI9341 demo.
 ![ch32v003f4u6-tssop20-dev-kit-sch](https://github.com/user-attachments/assets/30cffacf-fc64-4348-92b4-b646d2f82b91)
 
-If your have 3.3V device for this project and you will using operating power from USB-C connector, you have to  
+If your have 3.3V device for this project and you will using operating power from USB-C connector, You have to  
 buy test PCB included 3.3V LDO. 
 
 Below schematic diagram is USB-to-Serial converter can be use connect vertual COMx port to the PC USB port.
