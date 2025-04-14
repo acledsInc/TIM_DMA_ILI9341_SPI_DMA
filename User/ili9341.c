@@ -10,11 +10,13 @@
 ///  - https://github.com/cnlohr/ch32v003fun/tree/master/examples/spi_oled
 /// \copyright Attribution-NonCommercial-ShareAlike 4.0 (CC BY-NC-SA 4.0)
 
+#include "ch32v00x.h"
 #include <debug.h>
 #include <stdint.h>
-#include "ch32v00x_spi.h"
 
+#include "ch32v00x_spi.h"
 #include "ili9341.h"
+
 #include "font5x7.h"
 #define FONT_WIDTH  5  // Font width
 #define FONT_HEIGHT 7  // Font height
@@ -25,17 +27,16 @@
 
 // CH32V003 Pin Definitions
 //#define SPI_RESET 0  // PC0 // not used
-#define SPI_DC    3  // PC3
-#define SPI_CS    4  // PC4
-#define SPI_SCLK  5  // PC5
-#define SPI_MOSI  6  // PC6
+#define SPI_DC    GPIO_Pin_3  // PC3 =PP
+#define SPI_CS    GPIO_Pin_4  // PC4 =PP
+#define SPI_SCLK  GPIO_Pin_5  // PC5 =AF
+#define SPI_MOSI  GPIO_Pin_6  // PC6 =AF
+#define SPI_MISO  GPIO_Pin_7  // PC7 =FL (NOT USED)
 
 // Use SPI_INIT
 #define CTLR1_SPE_Set      ((uint16_t)0x0040)
 #define GPIO_CNF_OUT_PP    0x00
 #define GPIO_CNF_OUT_PP_AF 0x08
-
-#include "ch32v00x.h"
 
 #define SPI_DATA_8B()			(SPI1->CTLR1 &= ~SPI_CTLR1_DFF)
 #define SPI_DATA_16B()			(SPI1->CTLR1 |= SPI_CTLR1_DFF)
@@ -71,7 +72,6 @@ static void SPI_init()
 {
     GPIO_InitTypeDef GPIO_InitStructure = {0};
     SPI_InitTypeDef  SPI_InitStructure = {0};
-    //DMA_InitTypeDef DMA_InitStructure = {0};
 
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, ENABLE);
@@ -80,25 +80,25 @@ static void SPI_init()
     // DC =PC3
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_30MHz;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(GPIOC, &GPIO_InitStructure);
 
     // CS =PC4
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_30MHz;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(GPIOC, &GPIO_InitStructure);
 
-    // HW SPI1, SCLK =PC5
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;
+    // HW SPI1, SCLK =PC5, MOSI =PC6
+    GPIO_InitStructure.GPIO_Pin = SPI_SCLK | SPI_MOSI;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_30MHz;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(GPIOC, &GPIO_InitStructure);
 
-    // HW SPI1, MOSI =PC6
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_30MHz;
+    // HW MISO =PC7
+    GPIO_InitStructure.GPIO_Pin = SPI_MISO;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(GPIOC, &GPIO_InitStructure);
 
     // Configure HW SPI = SPI1 Master Mode
@@ -106,7 +106,9 @@ static void SPI_init()
     SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
     SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
     SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
-    SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
+
+    // Used SPI_CS =PC4
+    SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;  // Not used HW NSS
     SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_2;
     SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
     SPI_InitStructure.SPI_CRCPolynomial = 7;
@@ -116,11 +118,8 @@ static void SPI_init()
     SPI_I2S_DMACmd(SPI1, SPI_I2S_DMAReq_Tx, ENABLE);
     SPI_Cmd(SPI1, ENABLE);
 
-    // Enable DMA peripheral
-    RCC->AHBPCENR |= RCC_AHBPeriph_DMA1;
-
-    // Clear previous configuration
-    DMA1_Channel3->CFGR = 0;    // added 250301
+    RCC->AHBPCENR |= RCC_AHBPeriph_DMA1;    // Enable DMA peripheral
+    DMA1_Channel3->CFGR = 0;    // Clear previous configuration
 
     // Config DMA for SPI TX in Circular Mode
     DMA1_Channel3->CFGR = DMA_DIR_PeripheralDST          // Bit 4     - Read from memory
@@ -131,8 +130,7 @@ static void SPI_init()
                           | DMA_MemoryDataSize_Byte      // Bit 10-11 - 8-bit data
                           | DMA_Priority_VeryHigh        // Bit 12-13 - Very high priority
                           | DMA_M2M_Disable;             // Bit 14    - Disable memory to memory mode
-    // Set Peripheral address
-    DMA1_Channel3->PADDR = (uint32_t)&SPI1->DATAR;
+    DMA1_Channel3->PADDR = (uint32_t)&SPI1->DATAR;  // Set Peripheral address
 }
 
 // Send Data Through SPI via DMA
@@ -143,30 +141,13 @@ static void SPI_send_DMA(const uint8_t* buffer, uint16_t size, uint16_t repeat)
     DMA1_Channel3->MADDR = (uint32_t)buffer; // Set memory address
     DMA1_Channel3->CNTR  = size;              // Set number of data items
 
-    /*
-    //DMA1_Channel3->CFGR |= DMA_CFGR1_EN;  // Turn on channel
-    while (repeat--)
-    {
-        // Clear flag, start sending?
-        //DMA1->INTFCR = DMA1_FLAG_TC3; <--- old code
-        DMA1_Channel3->CFGR |= DMA_CFGR1_EN;  // Ensure DMA is enabled <--- new code ok too
-
-        // Waiting for channel 3 transmission complete
-        while (!(DMA1->INTFR & DMA1_FLAG_TC3));
-        DMA1->INTFCR |= DMA1_FLAG_TC3; // Clear the flag
-    }
-    */
-
     // Circulate the buffer
     for (uint16_t i = 0; i < repeat; i++)
     {
-        // Enable DMA channel
         DMA1_Channel3->CFGR |= DMA_CFGR1_EN;  // Ensure DMA is enabled
 
-        // Clear the transfer complete flag before starting a new transfer
+        // Clear flag before starting a new transfer
         DMA1->INTFCR |= DMA1_FLAG_TC3; // Clear transfer complete flag
-
-        // Wait for transmission complete
         while (!(DMA1->INTFR & DMA1_FLAG_TC3)); // Wait until the transfer is complete
     }
 
@@ -181,8 +162,7 @@ static void SPI_send_DMA(const uint8_t* buffer, uint16_t size, uint16_t repeat)
 static void SPI_send8(uint8_t data)
 {
 	while((SPI1->STATR & SPI_STATR_TXE) != SPI_STATR_TXE){};
-    // Send byte
-    SPI1->DATAR = data;
+    SPI1->DATAR = data; // Send byte
 
     // Waiting for transmission complete
     //while (!(SPI1->STATR & SPI_STATR_TXE));
@@ -206,20 +186,13 @@ uint8_t spi_recv8(uint8_t dummy)
 
 void spi_send_dma16(uint16_t *data, uint16_t size)
 {
-	//Change data length to 16bit
-	SPI_DATA_16B();
-	//First disable DMA
-	DMA1_Channel3->CFGR &= ~DMA_CFGR3_EN;
-	//Buffer address
-	DMA1_Channel3->MADDR = (uint32_t)data;
-	//Number of data transfer
-	DMA1_Channel3->CNTR = (uint16_t)size;
-	//Enable DMA Channel
-	DMA1_Channel3->CFGR |= DMA_CFGR3_EN;	
-}
-//-------------------------------------------------------------
-// End of spi_send from spi.c
-//-------------------------------------------------------------
+	SPI_DATA_16B(); //Change data length to 16bit
+
+	DMA1_Channel3->CFGR &= ~DMA_CFGR3_EN;   //First disable DMA
+	DMA1_Channel3->MADDR = (uint32_t)data;  //Buffer address
+	DMA1_Channel3->CNTR = (uint16_t)size;   //Number of data transfer
+	DMA1_Channel3->CFGR |= DMA_CFGR3_EN;	//Enable DMA Channel
+}   // End of spi_send from spi.c
 
 //-------------------------------------------------------------
 // brief Send 8-Bit Command
@@ -252,7 +225,7 @@ static void write_data_8(uint8_t data)
 static void write_data_16(uint16_t data)
 {
 	SPI_DATA_16B(); // <--- Bug ???
-    GPIO_SetBits(GPIOC, GPIO_Pin_3);    // DC = high
+    GPIO_SetBits(GPIOC, SPI_DC);    // DC = high
 
 	GPIO_ResetBits(GPIOC, SPI_CS);	// ILI9341_CS_ON();
     //SPI_send8(data >> 8);
@@ -266,13 +239,10 @@ void write_dma_data16(uint16_t *data, uint16_t size)
 	GPIO_SetBits(GPIOC, SPI_DC);	// ILI9341_DC_DATA();
 
 	GPIO_ResetBits(GPIOC, SPI_CS);	// ILI9341_CS_ON();
-	//Send data
-	spi_send_dma16(data, size);
-	//Wait end of transfer
-	while((DMA1->INTFR & DMA_TCIF3) != DMA_TCIF3){};
+	spi_send_dma16(data, size); //Send data
 
-	//Clear DMA global flag  
-	DMA1->INTFCR |= DMA_CGIF3;
+	while((DMA1->INTFR & DMA_TCIF3) != DMA_TCIF3){};	//Wait end of transfer
+	DMA1->INTFCR |= DMA_CGIF3;	//Clear DMA global flag  
 }
 
 // ST7735 Gamma Adjustments (pos. polarity), 16 args.
@@ -372,7 +342,7 @@ void tft_init(void)
     write_command_8(ILI9341_DISPON);
     Delay_Ms(10);
 
-	//write_command_8(ILI9341_RAMWR); // 0x2C =Memory Write
+	write_command_8(ILI9341_RAMWR); // 0x2C =Memory Write
     GPIO_SetBits(GPIOC, GPIO_Pin_4);    // CS = high
 }
 
@@ -439,11 +409,11 @@ void tft_print_char(char c)
     const unsigned char* start = &font[c +(c << 2)];
 
     uint16_t sz = 0;
-    for (uint16_t i = 0; i < FONT_HEIGHT; i++)
+    for (uint16_t i =0; i < FONT_HEIGHT; i++)
     {
-        for (uint16_t j = 0; j < FONT_WIDTH; j++)
+        for (uint16_t j =0; j < FONT_WIDTH; j++)
         {
-            if ((*(start + j)) & (0x01 << i))
+            if ((*(start +j)) & (0x01 << i))
             {
                 _buffer[sz++] = _color >> 8;
                 _buffer[sz++] = _color;
@@ -456,18 +426,106 @@ void tft_print_char(char c)
         }
     }
 
-    //START_WRITE();
-    GPIO_ResetBits(GPIOC, GPIO_Pin_4);   // CS = low
-
+    GPIO_ResetBits(GPIOC, GPIO_Pin_4);   //START_WRITE();
     tft_set_window(_cursor_x, _cursor_y, _cursor_x +FONT_WIDTH -1, _cursor_y +FONT_HEIGHT -1);
 
-    //DATA_MODE();
-    GPIO_SetBits(GPIOC, GPIO_Pin_3);    // DC = high
-
+    GPIO_SetBits(GPIOC, GPIO_Pin_3);    //DATA_MODE();
     SPI_send_DMA(_buffer, sz, 1);
+    GPIO_SetBits(GPIOC, GPIO_Pin_4);    //END_WRITE();
+}
 
-    //END_WRITE();
-    GPIO_SetBits(GPIOC, GPIO_Pin_4);    // CS = high
+//#include "fonts.h"
+//TM_FontDef_t TM_Font_7x10;
+
+//DMA buffer for putc function
+uint16_t buffer[512];
+
+void tft_get_font_size(char *str, TM_FontDef_t *font, uint16_t *width, uint16_t *height) 
+{
+	uint16_t w = 0;
+	*height = font->FontHeight;
+	while (*str++) 
+    {
+		w += font->FontWidth;
+	}
+	*width = w;
+}
+
+void tft_putc(uint16_t x, uint16_t y, char c, TM_FontDef_t *font, uint32_t foreground, uint32_t background) 
+{
+	uint32_t i, b, j;
+
+    /* Set coordinates */
+	ili9341_x =x;
+	ili9341_y =y;
+
+	if ((ili9341_x + font->FontWidth) > ILI9341.width) 
+    {
+		//If at the end of a line of display, go to new line and set x to 0 position
+		ili9341_y += font->FontHeight;
+		ili9341_x =0;
+	}
+	for (i = 0; i < font->FontHeight; i++) 
+    {
+		b = font->data[(c -32) *font->FontHeight + i];
+
+		for (j =0; j < font->FontWidth; j++) 
+        {
+			if ((b << j) & 0x8000) 
+            {
+				buffer[j +(i *font->FontWidth)] =foreground;
+			} 
+            else if ((background & ILI9341_TRANSPARENT) ==0) 
+            {
+				buffer[j +(i *font->FontWidth)] =background;
+			}
+		}
+	}
+
+	tft_cursor_position(ili9341_x,ili9341_y, (ili9341_x +font->FontWidth -1), (ili9341_y+font->FontHeight - 1));
+	write_command_8(ILI9341_RAMWR);  // RAM WRITE =0x2CC
+	write_command_8(ILI9341_WRTCONT);  // WRITE_CONTINUE =0x3C
+    
+	SPI_DMA_MEM_INC_ON();
+	write_dma_data16(buffer, (font->FontWidth *font->FontHeight));
+	SPI_DMA_MEM_INC_OFF();
+	ili9341_x += font->FontWidth;
+}
+
+void tft_puts(uint16_t x, uint16_t y, char *str, TM_FontDef_t *font, uint32_t foreground, uint32_t background) 
+{
+	uint16_t startX = x;
+
+	/* Set X and Y coordinates */
+	ili9341_x = x;
+	ili9341_y = y;
+
+	while (*str) 
+    {
+		//New line
+		if (*str == '\n') 
+        {
+			ili9341_y += font->FontHeight + 1;
+			//if after \n is also \r, than go to the left of the screen
+			if (*(str + 1) == '\r') 
+            {
+				ili9341_x = 0;
+				str++;
+			} 
+            else 
+            {
+				ili9341_x = startX;
+			}
+			str++;
+			continue;
+		} 
+        else if (*str == '\r') 
+        {
+			str++;
+			continue;
+		}
+		tft_putc(ili9341_x, ili9341_y, *str++, font, foreground, background);
+	}
 }
 
 /// \brief Print a String

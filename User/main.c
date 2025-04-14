@@ -453,18 +453,18 @@ void disp_ADC(void)
     adc_val =(u32)(ave_val);    // save for the feedback control
     mv_val =(ave_val *3250) /1023; // make [mV] from measured VCC value =3.25V
 
-    tft_set_cursor(0, 108);
+    tft_set_cursor(0, 192);
     tft_set_color(GREEN);
     tft_print("ADC1-CH7: ");
 
     // binary to 4 digit decimal as right align
     sprintf(dec_str, "%4d", mv_val);
-    tft_set_cursor(54, 108);
+    tft_set_cursor(70, 192);
     tft_set_color(YELLOW);
     tft_print(dec_str);
 
     // display unit =mV
-    tft_set_cursor(84, 108);
+    tft_set_cursor(105, 192);
     tft_set_color(GREEN);
     tft_print("mV");
 }
@@ -476,7 +476,7 @@ u32 timer2_cnt =0;  // Start user time =0ms
 
 void disp_TIM2(void)
 {
-    tft_set_cursor(0, 116);
+    tft_set_cursor(0, 208);
     tft_set_color(GREEN);
     tft_print("TIM2-CNT: ");
 
@@ -485,12 +485,12 @@ void disp_TIM2(void)
 
     // 32 bit binary to 4 digit decimal as right align
     sprintf(dec_str, "%4d", timer2_cnt);
-    tft_set_cursor(54, 116);
+    tft_set_cursor(70, 208);
     tft_set_color(CYAN);
     tft_print(dec_str);
 
     // Display unit =[ms]
-    tft_set_cursor(84, 116);
+    tft_set_cursor(105, 208);
     tft_set_color(GREEN);
     tft_print("ms");
 }
@@ -505,27 +505,28 @@ void disp_MENU(void)
     tft_set_color(GREEN);
     tft_set_cursor(0, 1);
     tft_print("CH32V003 SPWM & ILI9341 Demo");
+    //tft_puts(0, 16, "CH32V003 SPWM & ILI9341 Demo", &TM_Font_7x10, WHITE, BLACK);
 
     tft_set_color(WHITE);
-    tft_set_cursor(0, 16);
-    tft_print("1. Random dot");
-    tft_set_cursor(0, 24);
-    tft_print("2. Horizon line");
     tft_set_cursor(0, 32);
-    tft_print("3. Vertical line");
-    tft_set_cursor(0, 40);
-    tft_print("4. Random line");
+    tft_print("1. Random dot");
     tft_set_cursor(0, 48);
-    tft_print("5. Center Rectangle");
-    tft_set_cursor(0, 56);
-    tft_print("6. Random Rectangle");
+    tft_print("2. Horizon line");
     tft_set_cursor(0, 64);
-    tft_print("7. Filled rectangle");
-    tft_set_cursor(0, 72);
-    tft_print("8. Move Rectangle");
+    tft_print("3. Vertical line");
     tft_set_cursor(0, 80);
+    tft_print("4. Random line");
+    tft_set_cursor(0, 96);
+    tft_print("5. Center Rectangle");
+    tft_set_cursor(0, 112);
+    tft_print("6. Random Rectangle");
+    tft_set_cursor(0, 128);
+    tft_print("7. Filled rectangle");
+    tft_set_cursor(0, 144);
+    tft_print("8. Move Rectangle");
+    tft_set_cursor(0, 160);
     tft_print("9. Random Circle");
-    tft_set_cursor(0, 88);
+    tft_set_cursor(0, 176);
     tft_print("10. Filled Circle");
 }
 
@@ -790,10 +791,14 @@ int main(void)
 
     // all clear AF of GPIO
     GPIO_AFIODeInit();
+    GPIO_DeInit(GPIOA);
+    GPIO_DeInit(GPIOC);
+    GPIO_DeInit(GPIOD);
 
 #if (SDI_PRINT == SDI_PR_OPEN)
     SDI_Printf_Enable();
 #else
+    USART_DeInit(USART1);
     USART_Printf_Init(115200);
 #endif
     printf("SystemClk:%d\r\n", SystemCoreClock);
@@ -801,19 +806,25 @@ int main(void)
 
     // init SPWM waveform
     // (psc, arr*2 , ccp) for 15.0KHz PWM / 62 Step =120Hz
+    TIM_DeInit(TIM1);
     TIM1_PWMOut_Init(TIM1_ARR, TIM1_PSC, 0);
 
     // Sine PWM to CH1, CH1N,
+    DMA_DeInit(DMA1_Channel5);
     TIM1_DMA_Init(DMA1_Channel5, (u32)TIM1_CH1CVR_ADDRESS, (u32)sine_fdb, buf_size);
     //TIM1_DMA_Init(DMA1_Channel5, (u32)TIM1_CH2CVR_ADDRESS, (u32)sine_fdb buf_size);
 
     TIM_DMACmd(TIM1, TIM_DMA_Update, ENABLE);   // Start TIM1_DMA
     TIM_Cmd(TIM1, ENABLE);  //  Start TIM1
 
+    ADC_DeInit(ADC1);
     init_ADC();
+
+    DMA_DeInit(DMA1_Channel3);
     init_DMA();
 
     // Init ST7735 TFT LCD
+    SPI_I2S_DeInit(SPI1);
     tft_init();
     Delay_Ms(100);
 
@@ -828,7 +839,7 @@ int main(void)
         while(timer2_flag)
         {
             // Dispaly ADC-CH7 (0~1023) and TIM2-CNT (0~9999)
-            disp_ADC();     // Read ADC binary and decimal display [mV]
+            disp_ADC();     // Read ADC binary and display [mV]
             disp_TIM2();    // Display timer2 [ms]
 
             Delay_Ms(25);   // Display time =25ms

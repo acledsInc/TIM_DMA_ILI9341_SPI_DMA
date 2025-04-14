@@ -13,6 +13,11 @@
 #ifndef __ILI9341_H__
 #define __ILI9341_H__
 
+#include "ch32v00x.h"
+//#include "spi.h"
+#include "ch32v00x_spi.h"
+#include "fonts.h"
+
 // Delays
 #define ILI9341_RST_DELAY    50   // delay ms wait for reset finish
 #define ILI9341_SLPOUT_DELAY 120  // delay ms wait for sleep out finish
@@ -50,6 +55,7 @@
 #define ILI9341_IDMOFF  0x38  // Idle Mode Off
 #define ILI9341_IDMON   0x39  // Idle Mode On
 #define ILI9341_COLMOD  0x3A  // Interface Pixel Format
+#define ILI9341_WRTCONT 0x3C
 
 #define ILI9341_FRMCTR1 0xB1
 #define ILI9341_FRMCTR2 0xB2
@@ -183,5 +189,9 @@ void tft_draw_bitmap(uint16_t x, uint16_t y, uint16_t width, uint16_t height, co
 
 void tft_draw_circle(int16_t x0, int16_t y0, int16_t r, uint16_t color);
 void tft_fill_circle(int16_t x0, int16_t y0, int16_t r, uint16_t color);
+
+void tft_get_font_size(char *str, TM_FontDef_t *font, uint16_t *width, uint16_t *height);
+void tft_putc(uint16_t x, uint16_t y, char c, TM_FontDef_t *font, uint32_t foreground, uint32_t background); 
+void tft_puts(uint16_t x, uint16_t y, char *str, TM_FontDef_t *font, uint32_t foreground, uint32_t background);
 
 #endif  // __ILI9341_H__
