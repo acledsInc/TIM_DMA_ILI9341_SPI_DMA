@@ -18,8 +18,12 @@
 #include "ili9341.h"
 
 #include "font5x7.h"
-#define FONT_WIDTH  5  // Font width
-#define FONT_HEIGHT 7  // Font height
+#include "font7x10.h"
+
+//#define FONT_WIDTH  5  // Font width
+//#define FONT_HEIGHT 7  // Font height
+#define FONT_WIDTH  7   // Font width
+#define FONT_HEIGHT 10  // Font height
 
 //#include "fonts.h"
 #define ILI9341_X_OFFSET 0
@@ -60,11 +64,11 @@ uint16_t ili9341_x;
 uint16_t ili9341_y;
 ili9341_t ILI9341;
 
-static u16 _cursor_x =0;
-static u16 _cursor_y =0;        // Cursor position (x, y)
-static u16 _color  =WHITE;      // Color
-static u16 _bg_color =BLACK;    // Background color
-static u8  _buffer[128 << 1] = {0}; // DMA buffer, long enough to fill a row.
+static uint16_t _cursor_x =0;
+static uint16_t _cursor_y =0;        // Cursor position (x, y)
+static uint16_t _color  =WHITE;      // Color
+static uint16_t _bg_color =BLACK;    // Background color
+static uint8_t  _buffer[128 << 1] = {0}; // DMA buffer, long enough to fill a row.
 
 // brief Initialize ST7735
 // details Configure SPI, DMA, and RESET/DC/CS lines.
@@ -388,6 +392,7 @@ void tft_set_background_color(uint16_t color)
 /// \param y0 Start row
 /// \param x1 End column
 /// \param y1 End row
+
 static void tft_set_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
     write_command_8(ILI9341_CASET);
@@ -404,14 +409,16 @@ static void tft_set_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 /// \brief Print a Character
 /// \param c Character to print
 /// \details DMA accelerated.
+/*
 void tft_print_char(char c)
 {
-    const unsigned char* start = &font[c +(c << 2)];
+    const unsigned char* start = &font_5x7[c +(c << 2)];
+    uint8_t sz =0;
+    uint16_t i, j;
 
-    uint16_t sz = 0;
-    for (uint16_t i =0; i < FONT_HEIGHT; i++)
+    for (i =0; i < FONT_HEIGHT; i++)
     {
-        for (uint16_t j =0; j < FONT_WIDTH; j++)
+        for (j =0; j < FONT_WIDTH; j++)
         {
             if ((*(start +j)) & (0x01 << i))
             {
@@ -426,106 +433,53 @@ void tft_print_char(char c)
         }
     }
 
-    GPIO_ResetBits(GPIOC, GPIO_Pin_4);   //START_WRITE();
+    GPIO_ResetBits(GPIOC, SPI_CS);   //START_WRITE();
     tft_set_window(_cursor_x, _cursor_y, _cursor_x +FONT_WIDTH -1, _cursor_y +FONT_HEIGHT -1);
 
-    GPIO_SetBits(GPIOC, GPIO_Pin_3);    //DATA_MODE();
+    GPIO_SetBits(GPIOC, SPI_DC);    //DATA_MODE();
     SPI_send_DMA(_buffer, sz, 1);
-    GPIO_SetBits(GPIOC, GPIO_Pin_4);    //END_WRITE();
+    GPIO_SetBits(GPIOC, SPI_CS);    //END_WRITE();
 }
+*/
 
-//#include "fonts.h"
-//TM_FontDef_t TM_Font_7x10;
-
-//DMA buffer for putc function
-uint16_t buffer[512];
-
-void tft_get_font_size(char *str, TM_FontDef_t *font, uint16_t *width, uint16_t *height) 
+#define user_font font7x10
+void tft_print_char(char c)
 {
-	uint16_t w = 0;
-	*height = font->FontHeight;
-	while (*str++) 
+    if (c < 32 || c > 126) return; // Ensure character is printable
+
+    // Get the starting address of the character's data in the font array
+    const uint8_t* start = &user_font[(c -32) *FONT_HEIGHT];
+
+    uint8_t sz =0;
+    for (uint8_t i = 0; i < FONT_HEIGHT; i++) // Loop through font height
     {
-		w += font->FontWidth;
-	}
-	*width = w;
-}
-
-void tft_putc(uint16_t x, uint16_t y, char c, TM_FontDef_t *font, uint32_t foreground, uint32_t background) 
-{
-	uint32_t i, b, j;
-
-    /* Set coordinates */
-	ili9341_x =x;
-	ili9341_y =y;
-
-	if ((ili9341_x + font->FontWidth) > ILI9341.width) 
-    {
-		//If at the end of a line of display, go to new line and set x to 0 position
-		ili9341_y += font->FontHeight;
-		ili9341_x =0;
-	}
-	for (i = 0; i < font->FontHeight; i++) 
-    {
-		b = font->data[(c -32) *font->FontHeight + i];
-
-		for (j =0; j < font->FontWidth; j++) 
+        uint8_t row = start[i]; // Get the row data (8 bits per row)
+        for (uint8_t j =0; j < FONT_WIDTH; j++) // Loop through font width
         {
-			if ((b << j) & 0x8000) 
+            if (row & (1 << (FONT_WIDTH -1 -j))) // Check if the bit is set
             {
-				buffer[j +(i *font->FontWidth)] =foreground;
-			} 
-            else if ((background & ILI9341_TRANSPARENT) ==0) 
+                _buffer[sz++] = _color >> 8; // High byte of color
+                _buffer[sz++] = _color;      // Low byte of color
+            }
+            else
             {
-				buffer[j +(i *font->FontWidth)] =background;
-			}
-		}
-	}
+                _buffer[sz++] = _bg_color >> 8; // High byte of background color
+                _buffer[sz++] = _bg_color;      // Low byte of background color
+            }
+        }
+    }
 
-	tft_cursor_position(ili9341_x,ili9341_y, (ili9341_x +font->FontWidth -1), (ili9341_y+font->FontHeight - 1));
-	write_command_8(ILI9341_RAMWR);  // RAM WRITE =0x2CC
-	write_command_8(ILI9341_WRTCONT);  // WRITE_CONTINUE =0x3C
-    
-	SPI_DMA_MEM_INC_ON();
-	write_dma_data16(buffer, (font->FontWidth *font->FontHeight));
-	SPI_DMA_MEM_INC_OFF();
-	ili9341_x += font->FontWidth;
-}
+    // Set the window for the current character
+    tft_set_window(_cursor_x, _cursor_y, _cursor_x +FONT_WIDTH -1, _cursor_y +FONT_HEIGHT -1);
 
-void tft_puts(uint16_t x, uint16_t y, char *str, TM_FontDef_t *font, uint32_t foreground, uint32_t background) 
-{
-	uint16_t startX = x;
+    // Send the character data to the display
+    GPIO_ResetBits(GPIOC, SPI_CS);  // START_WRITE();
+    GPIO_SetBits(GPIOC, SPI_DC);    // DATA_MODE();
+    SPI_send_DMA(_buffer, sz, 1);
+    GPIO_SetBits(GPIOC, SPI_CS);    // END_WRITE();
 
-	/* Set X and Y coordinates */
-	ili9341_x = x;
-	ili9341_y = y;
-
-	while (*str) 
-    {
-		//New line
-		if (*str == '\n') 
-        {
-			ili9341_y += font->FontHeight + 1;
-			//if after \n is also \r, than go to the left of the screen
-			if (*(str + 1) == '\r') 
-            {
-				ili9341_x = 0;
-				str++;
-			} 
-            else 
-            {
-				ili9341_x = startX;
-			}
-			str++;
-			continue;
-		} 
-        else if (*str == '\r') 
-        {
-			str++;
-			continue;
-		}
-		tft_putc(ili9341_x, ili9341_y, *str++, font, foreground, background);
-	}
+    // Update cursor position
+    //_cursor_x += FONT_WIDTH +1; // Move cursor to the right for the next character
 }
 
 /// \brief Print a String
@@ -576,7 +530,7 @@ void tft_print_number(int32_t num, uint16_t width)
     }
 
     // Calculate alignment
-    num_width = (11 - position) *(FONT_WIDTH +1) -1;
+    num_width = (11 -position) *(FONT_WIDTH +1) -1;
     if (width > num_width)
     {
         _cursor_x += width -num_width;

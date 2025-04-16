@@ -426,111 +426,6 @@ u16 get_ADC(void)
 }
 
 //---------------------------------------------------------------------
-// Display ADC-CH7 0~1023
-//---------------------------------------------------------------------
-u32 adc_val;
-u32 mv_val;
-char dec_str[9];
-
-void disp_ADC(void)
-{
-    u16 i;
-    u16 adc_sum =0;
-    u16 ave_val;
-
-    // read ADC buffer from DMA1
-    for(i = 0; i < adc_buf_size; i++)
-    {
-        //adc_sum += (u32)(get_ADC());    // read direct ADC1-CH7
-        adc_sum += adc_BUF[i];  // make sum by DMA1-CH1 tranfered
-    }
-    ave_val =adc_sum /adc_buf_size; // make average of ADC
-
-    // Start ADC1-CH7 data DMA transfer to adc_BUF 
-    DMA_Tx_Init(DMA1_Channel1, (u32)&ADC1->RDATAR, (u32)adc_BUF, adc_buf_size);
-    DMA_Cmd(DMA1_Channel1, ENABLE); // Start DMA1_CH1
-
-    adc_val =(u32)(ave_val);    // save for the feedback control
-    mv_val =(ave_val *3250) /1023; // make [mV] from measured VCC value =3.25V
-
-    tft_set_cursor(0, 192);
-    tft_set_color(GREEN);
-    tft_print("ADC1-CH7: ");
-
-    // binary to 4 digit decimal as right align
-    sprintf(dec_str, "%4d", mv_val);
-    tft_set_cursor(70, 192);
-    tft_set_color(YELLOW);
-    tft_print(dec_str);
-
-    // display unit =mV
-    tft_set_cursor(105, 192);
-    tft_set_color(GREEN);
-    tft_print("mV");
-}
-
-//---------------------------------------------------------------------
-// Display User Timer2 Counter (0~9999)
-//---------------------------------------------------------------------
-u32 timer2_cnt =0;  // Start user time =0ms
-
-void disp_TIM2(void)
-{
-    tft_set_cursor(0, 208);
-    tft_set_color(GREEN);
-    tft_print("TIM2-CNT: ");
-
-    // Read TIM2-CNT value [ms]
-    timer2_cnt = TIM2->CNT;
-
-    // 32 bit binary to 4 digit decimal as right align
-    sprintf(dec_str, "%4d", timer2_cnt);
-    tft_set_cursor(70, 208);
-    tft_set_color(CYAN);
-    tft_print(dec_str);
-
-    // Display unit =[ms]
-    tft_set_cursor(105, 208);
-    tft_set_color(GREEN);
-    tft_print("ms");
-}
-
-//---------------------------------------------------------------------
-// Display Main Menu at ST7789 (128x160)
-//---------------------------------------------------------------------
-void disp_MENU(void)
-{
-    tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
-    tft_set_background_color(BLACK);
-    tft_set_color(GREEN);
-    tft_set_cursor(0, 1);
-    tft_print("CH32V003 SPWM & ILI9341 Demo");
-    //tft_puts(0, 16, "CH32V003 SPWM & ILI9341 Demo", &TM_Font_7x10, WHITE, BLACK);
-
-    tft_set_color(WHITE);
-    tft_set_cursor(0, 32);
-    tft_print("1. Random dot");
-    tft_set_cursor(0, 48);
-    tft_print("2. Horizon line");
-    tft_set_cursor(0, 64);
-    tft_print("3. Vertical line");
-    tft_set_cursor(0, 80);
-    tft_print("4. Random line");
-    tft_set_cursor(0, 96);
-    tft_print("5. Center Rectangle");
-    tft_set_cursor(0, 112);
-    tft_print("6. Random Rectangle");
-    tft_set_cursor(0, 128);
-    tft_print("7. Filled rectangle");
-    tft_set_cursor(0, 144);
-    tft_print("8. Move Rectangle");
-    tft_set_cursor(0, 160);
-    tft_print("9. Random Circle");
-    tft_set_cursor(0, 176);
-    tft_print("10. Filled Circle");
-}
-
-//---------------------------------------------------------------------
 // White Noise Generator State
 //---------------------------------------------------------------------
 #define NOISE_BITS      8
@@ -778,6 +673,104 @@ void demo_LCD(void)
 
     random_circ();
     fill_circ();
+}
+ 
+//---------------------------------------------------------------------
+// Display ADC-CH7 0~1023
+//---------------------------------------------------------------------
+u32 adc_val;
+u32 mv_val;
+char dec_str[9];
+
+void disp_ADC(void)
+{
+    u16 i;
+    u16 adc_sum =0;
+    u16 ave_val;
+
+    // read ADC buffer from DMA1
+    for(i = 0; i < adc_buf_size; i++)
+    {
+        //adc_sum += (u32)(get_ADC());    // read direct ADC1-CH7
+        adc_sum += adc_BUF[i];  // make sum by DMA1-CH1 tranfered
+    }
+    ave_val =adc_sum /adc_buf_size; // make average of ADC
+
+    // Start ADC1-CH7 data DMA transfer to adc_BUF 
+    DMA_Tx_Init(DMA1_Channel1, (u32)&ADC1->RDATAR, (u32)adc_BUF, adc_buf_size);
+    DMA_Cmd(DMA1_Channel1, ENABLE); // Start DMA1_CH1
+
+    adc_val =(u32)(ave_val);    // save for the feedback control
+    mv_val =(ave_val *3250) /1023; // make [mV] from measured VCC value =3.25V
+
+    tft_set_cursor(0, 176);
+    tft_set_color(GREEN);
+    tft_print("ADC1-CH7: ");
+
+    // binary to 4 digit decimal as right align
+    sprintf(dec_str, "%4d", mv_val);
+    tft_set_color(YELLOW);
+    tft_print(dec_str);
+
+    tft_set_color(GREEN);
+    tft_print(" mV");
+}
+
+//---------------------------------------------------------------------
+// Display User Timer2 Counter (0~9999)
+//---------------------------------------------------------------------
+u32 timer2_cnt =0;  // Start user time =0ms
+
+void disp_TIM2(void)
+{
+    tft_set_cursor(0, 192);
+    tft_set_color(GREEN);
+    tft_print("TIM2-CNT: ");
+
+    // Read TIM2-CNT value [ms]
+    timer2_cnt = TIM2->CNT;
+
+    // 32 bit binary to 4 digit decimal as right align
+    sprintf(dec_str, "%4d", timer2_cnt);
+    tft_set_color(CYAN);
+    tft_print(dec_str);
+
+    tft_set_color(GREEN);
+    tft_print(" ms");
+}
+
+//---------------------------------------------------------------------
+// Display Main Menu at ST7789 (128x160)
+//---------------------------------------------------------------------
+void disp_MENU(void)
+{
+    tft_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, BLACK);
+    tft_set_background_color(BLACK);
+    tft_set_color(GREEN);
+    tft_set_cursor(0, 0);
+    tft_print("CH32V003 SPWM-DMA-TIM1 SPI-DMA-ILI9341");
+
+    tft_set_color(WHITE);
+    tft_set_cursor(0, 16);
+    tft_print("1. Random dot");
+    tft_set_cursor(0, 32);
+    tft_print("2. Horizon line");
+    tft_set_cursor(0, 48);
+    tft_print("3. Vertical line");
+    tft_set_cursor(0, 64);
+    tft_print("4. Random line");
+    tft_set_cursor(0, 80);
+    tft_print("5. Center Rectangle");
+    tft_set_cursor(0, 96);
+    tft_print("6. Random Rectangle");
+    tft_set_cursor(0, 112);
+    tft_print("7. Filled rectangle");
+    tft_set_cursor(0, 128);
+    tft_print("8. Move Rectangle");
+    tft_set_cursor(0, 144);
+    tft_print("9. Random Circle");
+    tft_set_cursor(0, 160);
+    tft_print("10. Filled Circle");
 }
 
 //---------------------------------------------------------------------
