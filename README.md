@@ -45,7 +45,9 @@ while 5 sec as end of timer2 (0 - 9999ms), after 5 sec Start 10 kind of graphic 
 ![ili9341-main-menu](https://github.com/user-attachments/assets/8d12af44-7f03-4a3f-9130-59c3272f2666)
 
 I was modified 5x7 font to 7x10 font, Because 5x7 font was too small at 2.8 inch 320x240 ILI9341 LCD screen.
-if you require 5x7 font, modify #define FONT_WIDTH 7 to 5, and #define FONT_HEIGHT 11 to 7 in ili9341.c
+if you require 5x7 font, modify #define FONT_WIDTH 7 to 5, and #define FONT_HEIGHT 10 to 7 in ili9341.c
+And modify #define user_font font7x10 to #define user_font font5x7
+
 ![ILI9341-main-menu-new](https://github.com/user-attachments/assets/cda98d6c-2b69-4b11-a471-f8f4495c341f)
 
 High speed LCD graphic demo with SPI-DMA transfer of the main function is intented to examine efect of TIM1 SPWM generation. Delay_Ms timer do not match delay time when using many DMA operation. I was fix it by used TIM2 interrupt for the each different graphic display timer. 
@@ -74,6 +76,7 @@ Below schematic diagram is USB-to-Serial converter can be use connect vertual CO
 All source code made from reference of sample code at CH32V003 EVT for TSSOP-20pin WCH-CH32V003F4P6.
 This MPU has advance TIM1, TIM2, ADC, SPI, I2S and DMA functions compatible as ARM STM32F0XX series hardware,
 with standard HAL library code style for MounRiver Studio V2.1.0 (used dark theme same as vsCode)
+MounRiver Studio included WCH-Toolchain(GCC8) for the RISCV-32bit-gcc compiler with source code editor.
 ![MounRiver-Studio-V2 10](https://github.com/user-attachments/assets/1a961f86-08be-48a6-9338-c94715416733)
 
 Flash tool used WCH-LinkE-Mini. (GND, SWD, VCC connected to GND, PD1, VCC of CH32V003F4P6).
