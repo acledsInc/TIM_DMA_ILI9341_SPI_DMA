@@ -86,7 +86,7 @@ Below schematic diagram is USB-to-Serial converter can be use connect vertual CO
 
 ![ch32v003f4p6-usbc-sch](https://github.com/user-attachments/assets/d4c162af-fc2d-487a-8d62-5a66ccd0f641)
 
-All source code made from reference of sample code at CH32V003 EVT for TSSOP-20pin WCH-CH32V003F4P6.
+All source code made from reference of sample code in CH32V003 EVT.
 This MPU has advance TIM1, TIM2, ADC, SPI, I2S and DMA functions compatible as ARM STM32F0XX series hardware,
 with standard HAL library code style for MounRiver Studio V2.1.0 (used dark theme same as vsCode)
 
