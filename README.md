@@ -39,7 +39,7 @@ write_data_8(ILI9341_MADCTL_MX | ILI9341_MADCTL_MY | ILI9341_MADCTL_MV | ILI9341
 
 If your 2.8 inch ILI9341 back-light brightness less than 1.4 inch small LCD when use 3.3V VDD. 
 You can be exchange R5 at connected BL drive transistor collector (Q1).
-Resistor R5 exchange 8R2 to 1R0 or 2R2 then LCD brightness increase more high brightness.
+Resistor R5 exchange 8R2 to 1R0, then LCD brightness increase more high brightness.
 
 ![ILI9324-240x320-v1 2-bottom](https://github.com/user-attachments/assets/ebcde002-1628-449e-a546-9111e52792f3)
 
