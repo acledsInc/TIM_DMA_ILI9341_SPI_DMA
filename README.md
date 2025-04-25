@@ -52,11 +52,9 @@ while 5 sec as end of timer2 (0 - 9999ms), after 5 sec Start 10 kind of graphic 
 
 ![ili9341-main-menu](https://github.com/user-attachments/assets/8d12af44-7f03-4a3f-9130-59c3272f2666)
 
-I was modified 5x7 font to 7x10 font, Because 5x7 font was too small at 2.8 inch 320x240 ILI9341 LCD screen.
-if you require 5x7 font, modify #define FONT_WIDTH 7 to 5, and #define FONT_HEIGHT 10 to 7 in ili9341.c
-And modify #define user_font font7x10 to #define user_font font5x7
+I was exchanged 5x7 font to 7x10 font, Because 5x7 font was too small at 2.8 ~ 3.5 inch 320x240 ILI9341 LCD screen.
 
-![ILI9341-main-menu-new](https://github.com/user-attachments/assets/cda98d6c-2b69-4b11-a471-f8f4495c341f)
+![ili9341-main-menu](https://github.com/user-attachments/assets/a8e1925a-ec23-4bb7-8ef4-afb3b592446d)
 
 High speed LCD graphic demo with SPI-DMA transfer of the main function is intented to examine efect of TIM1 SPWM generation. 
 Delay_Ms timer do not match delay time when using many DMA operation. 
