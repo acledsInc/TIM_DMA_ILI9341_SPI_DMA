@@ -699,7 +699,7 @@ void disp_MENU(void)
     tft_set_cursor(0, LINE_HEIGHT *3);
     tft_print("2. Horizontal Line");
     tft_set_cursor(0, LINE_HEIGHT *4);
-    tft_print("3. Vertical3 Line");
+    tft_print("3. Vertical Line");
     tft_set_cursor(0, LINE_HEIGHT *5);
     tft_print("4. Random Line");
     tft_set_cursor(0, LINE_HEIGHT *6);
