@@ -50,8 +50,6 @@ TIM2 can be use msec timer for user delay timer as TIM2 interrupt service.
 This timer used TIM2->CNT get timer2 counter value by "on the fly" and diaplay in main menu 
 while 5 sec as end of timer2 (0 - 9999ms), after 5 sec Start 10 kind of graphic display to the LCD screen.
 
-![ili9341-main-menu](https://github.com/user-attachments/assets/8d12af44-7f03-4a3f-9130-59c3272f2666)
-
 I was exchanged 5x7 font to 7x10 font, Because 5x7 font was too small at 2.8 ~ 3.5 inch 320x240 ILI9341 LCD screen.
 
 ![ili9341-main-menu](https://github.com/user-attachments/assets/a8e1925a-ec23-4bb7-8ef4-afb3b592446d)
