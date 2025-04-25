@@ -48,7 +48,7 @@ and SPWM duty (sine wave amplitude) feedback control. (not implimented yet).
 
 TIM2 can be use msec timer for user delay timer as TIM2 interrupt service.
 This timer used TIM2->CNT get timer2 counter value by "on the fly" and diaplay in main menu 
-while 5 sec as end of timer2 (0 - 9999ms), after 10 sec Start 10 kind of graphic display to the LCD screen.
+while 10 sec as end of timer2 (0 - 9999ms), after 10 sec Start 10 kind of graphic display to the LCD screen.
 
 I was exchanged 5x7 font to 7x10 font, Because 5x7 font was too small at 2.8 ~ 3.5 inch 320x240 ILI9341 LCD screen.
 
