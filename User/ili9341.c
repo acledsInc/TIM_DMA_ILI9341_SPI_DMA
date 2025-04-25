@@ -17,13 +17,13 @@
 #include "ch32v00x_spi.h"
 #include "ili9341.h"
 
-#include "font5x7.h"
 #include "font7x10.h"
+#define FONT_WIDTH 7
+#define FONT_HEIGHT 10
 
-//#define FONT_WIDTH  5  // Font width
-//#define FONT_HEIGHT 7  // Font height
-#define FONT_WIDTH  7   // Font width
-#define FONT_HEIGHT 10  // Font height
+//#include "font11x18.h"
+//#define FONT_WIDTH 11
+//#define FONT_HEIGHT 18
 
 //#include "fonts.h"
 #define ILI9341_X_OFFSET 0
@@ -68,7 +68,9 @@ static uint16_t _cursor_x =0;
 static uint16_t _cursor_y =0;        // Cursor position (x, y)
 static uint16_t _color  =WHITE;      // Color
 static uint16_t _bg_color =BLACK;    // Background color
-static uint8_t  _buffer[128 << 1] = {0}; // DMA buffer, long enough to fill a row.
+
+// DMA buffer, long enough to fill a row.
+static uint8_t  _buffer[128 << 1] = {0}; 
 
 // brief Initialize ST7735
 // details Configure SPI, DMA, and RESET/DC/CS lines.
@@ -159,6 +161,16 @@ static void SPI_send_DMA(const uint8_t* buffer, uint16_t size, uint16_t repeat)
     DMA1_Channel3->CFGR &= ~DMA_CFGR1_EN; // Turn off channel
 }
 
+void spi_send_dma16(uint16_t *data, uint16_t size)
+{
+	SPI_DATA_16B(); //Change data length to 16bit
+
+	DMA1_Channel3->CFGR &= ~DMA_CFGR3_EN;   //First disable DMA
+	DMA1_Channel3->MADDR = (uint32_t)data;  //Buffer address
+	DMA1_Channel3->CNTR = (uint16_t)size;   //Number of data transfer
+	DMA1_Channel3->CFGR |= DMA_CFGR3_EN;	//Enable DMA Channel
+}   // End of spi_send from spi.c
+
 //-------------------------------------------------------------
 // brief Send Data Directly Through SPI
 // param data 8-bit data
@@ -187,16 +199,6 @@ uint8_t spi_recv8(uint8_t dummy)
 	
 	return (uint8_t)SPI1->DATAR;
 }
-
-void spi_send_dma16(uint16_t *data, uint16_t size)
-{
-	SPI_DATA_16B(); //Change data length to 16bit
-
-	DMA1_Channel3->CFGR &= ~DMA_CFGR3_EN;   //First disable DMA
-	DMA1_Channel3->MADDR = (uint32_t)data;  //Buffer address
-	DMA1_Channel3->CNTR = (uint16_t)size;   //Number of data transfer
-	DMA1_Channel3->CFGR |= DMA_CFGR3_EN;	//Enable DMA Channel
-}   // End of spi_send from spi.c
 
 //-------------------------------------------------------------
 // brief Send 8-Bit Command
@@ -236,7 +238,7 @@ static void write_data_16(uint16_t data)
     //SPI_send8(data);
 	spi_send16(data);
     //GPIO_SetBits(GPIOC, SPI_CS);	// ILI9341_CS_OFF();
- }
+}
 
 void write_dma_data16(uint16_t *data, uint16_t size)
 {
@@ -286,7 +288,7 @@ void tft_init(void)
 
     // 0x36 =Memory Data Access Control for Set rotation (ILI9341)
     write_command_8(ILI9341_MADCTL); 
-    write_data_8(ILI9341_MADCTL_MX | ILI9341_MADCTL_MY |ILI9341_MADCTL_MV | ILI9341_MADCTL_BGR ); // 0 - Horizontal
+    write_data_8(ILI9341_MADCTL_MX | ILI9341_MADCTL_MY |ILI9341_MADCTL_MV | ILI9341_MADCTL_BGR); // 0 - Horizontal
 
     // Set rotate for ST7735 =0 ~ 3
     //write_data_8(ILI9341_MADCTL_MY | ILI9341_MADCTL_MV | ILI9341_MADCTL_BGR); // 0 - Horizontal
@@ -442,44 +444,61 @@ void tft_print_char(char c)
 }
 */
 
-#define user_font font7x10
 void tft_print_char(char c)
 {
     if (c < 32 || c > 126) return; // Ensure character is printable
 
-    // Get the starting address of the character's data in the font array
-    const uint8_t* start = &user_font[(c -32) *FONT_HEIGHT];
+    // Get the starting address of character
+    const uint8_t* start = &font7x10[(c -32) *FONT_HEIGHT];  // font address offset
+    //const uint16_t* start = &font11x18[(c -32) *FONT_HEIGHT];   // font address offset
 
-    uint8_t sz =0;
-    for (uint8_t i = 0; i < FONT_HEIGHT; i++) // Loop through font height
+    uint16_t sz =0;
+    for (uint8_t i =0; i < FONT_HEIGHT; i++) // font height =0~10
     {
-        uint8_t row = start[i]; // Get the row data (8 bits per row)
-        for (uint8_t j =0; j < FONT_WIDTH; j++) // Loop through font width
+        uint8_t row = start[i];   // Get the row data from font address offset
+        //uint8_t row = (start[i] >>8) & 0xFF;    // row = high byte of font word
+
+        for (uint8_t j =0; j < FONT_WIDTH; j++) // j =0~7
         {
-            if (row & (1 << (FONT_WIDTH -1 -j))) // Check if the bit is set
+            if (row & (1 << (FONT_WIDTH -1 -j))) // bit is set = 7~0
             {
-                _buffer[sz++] = _color >> 8; // High byte of color
-                _buffer[sz++] = _color;      // Low byte of color
+                _buffer[sz++] = _color >> 8; // High byte of font color
+                _buffer[sz++] = _color;      // Low byte of font color
             }
-            else
+            else    // bit is reset = 7~0
             {
-                _buffer[sz++] = _bg_color >> 8; // High byte of background color
-                _buffer[sz++] = _bg_color;      // Low byte of background color
+                _buffer[sz++] = _bg_color >> 8; // High byte of bg color
+                _buffer[sz++] = _bg_color;      // Low byte of bg color
             }
         }
+
+        /*
+        row = start[i] & 0xFF;    // row = low byte of font word
+        for (uint8_t j =0; j < FONT_WIDTH -8; j++) // j =0~3
+        {
+            if (row & (1 << (FONT_WIDTH -9 -j))) // bit is set = 2~0
+            {
+                _buffer[sz++] = _color >> 8; // High byte of font color
+                _buffer[sz++] = _color;      // Low byte of font color
+            }
+            else    // bit is reset = 2~0
+            {
+                _buffer[sz++] = _bg_color >> 8; // High byte of bg color
+                _buffer[sz++] = _bg_color;      // Low byte of bg color
+            }
+        }
+        */
     }
 
     // Set the window for the current character
     tft_set_window(_cursor_x, _cursor_y, _cursor_x +FONT_WIDTH -1, _cursor_y +FONT_HEIGHT -1);
 
     // Send the character data to the display
-    GPIO_ResetBits(GPIOC, SPI_CS);  // START_WRITE();
     GPIO_SetBits(GPIOC, SPI_DC);    // DATA_MODE();
+
+    GPIO_ResetBits(GPIOC, SPI_CS);  // START_WRITE();
     SPI_send_DMA(_buffer, sz, 1);
     GPIO_SetBits(GPIOC, SPI_CS);    // END_WRITE();
-
-    // Update cursor position
-    //_cursor_x += FONT_WIDTH +1; // Move cursor to the right for the next character
 }
 
 /// \brief Print a String

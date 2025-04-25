@@ -14,10 +14,7 @@
 #define __ILI9341_H__
 
 #include "ch32v00x.h"
-//#include "spi.h"
 #include "ch32v00x_spi.h"
-#include "font5x7.h"
-#include "font7x10.h"
 
 // Delays
 #define ILI9341_RST_DELAY    50   // delay ms wait for reset finish
