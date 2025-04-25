@@ -20,14 +20,9 @@
 				"name": "*.wvproj"
 			},
 			{
+				"name": "font5x7.h",
 				"parentLogicPath": "User",
-				"type": "file",
-				"name": "st7735.c.bak"
-			},
-			{
-				"parentLogicPath": "User",
-				"type": "file",
-				"name": "st7735.h.bak"
+				"type": "file"
 			}
 		],
 		"projectName": "TIM_DMA_ILI9341_SPI_DMA",
