@@ -4980,8 +4980,8 @@ Disassembly of section .text:
     32d4:	5053 2d49 4c49 3949 3433 0031 2e31 5220     SPI-ILI9341.1. R
     32e4:	6e61 6f64 206d 6f44 0074 0000 2e32 4820     andom Dot...2. H
     32f4:	726f 7a69 6e6f 6174 206c 694c 656e 0000     orizontal Line..
-    3304:	2e33 5620 7265 6974 6163 336c 4c20 6e69     3. Vertical3 Lin
-    3314:	0065 0000 2e34 5220 6e61 6f64 206d 694c     e...4. Random Li
+    3304:	2e33 5620 7265 6974 6163 206c 694c 656e     3. Vertical Line
+    3314:	0000 0000 2e34 5220 6e61 6f64 206d 694c     ....4. Random Li
     3324:	656e 0000 2e35 4320 6e65 6574 6572 2064     ne..5. Centered 
     3334:	6552 7463 6e61 6c67 0065 0000 2e36 5220     Rectangle...6. R
     3344:	6e61 6f64 206d 6552 7463 6e61 6c67 0065     andom Rectangle.
