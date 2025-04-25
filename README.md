@@ -83,7 +83,7 @@ Below schematic diagram is USB-to-Serial converter can be use connect vertual CO
 ![ch32v003f4p6-usbc-sch](https://github.com/user-attachments/assets/d4c162af-fc2d-487a-8d62-5a66ccd0f641)
 
 All source code made from reference of sample code in CH32V003 EVT.
-This MPU has advance TIM1, TIM2, ADC, SPI, I2S and DMA functions compatible as ARM STM32F0XX series hardware,
+This MPU has advance TIM1, TIM2, ADC, SPI or I2S, I2C and DMA functions compatible as ARM STM32F0XX series hardware,
 with standard HAL library code style for MounRiver Studio V2.1.0 (used dark theme same as vsCode)
 
 MounRiver Studio included WCH-Toolchain(GCC8) for the RISCV-32bit-gcc compiler with source code editor.
