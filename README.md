@@ -58,7 +58,7 @@ High speed LCD graphic demo with SPI-DMA transfer of the main function is intent
 Delay_Ms timer do not match delay time when using many DMA operation. 
 I was fix it by used TIM2 interrupt for the each different graphic display timer. 
 
-Below screen shots are graphic demo on the TFT LCD ILI9341.
+Below screen shots are high speed graphic demo used SPI1-DMA transfer to the TFT LCD ILI9341.
 
 ![ILI9341-Random-Dot](https://github.com/user-attachments/assets/00d75460-e9b7-4c21-861d-69b98c488a89)
 ![ILI9341-Horz-Line](https://github.com/user-attachments/assets/9a079515-36e7-40d4-a967-6a213c061965)
